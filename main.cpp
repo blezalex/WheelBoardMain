@@ -11,22 +11,22 @@
 #include <stdio.h>
 
 #include "arduino.h"
-#include "mpu.hpp"
-#include "usart.h"
-#include "pwm_out.hpp"
+#include "drv/mpu6050/mpu.hpp"
+#include "io/usart.hpp"
+#include "io/pwm_out.hpp"
 #include "lpf.hpp"
 #include "pid.hpp"
-#include "genericOut.hpp"
-#include "footpadGuard.hpp"
-#include "serial.hpp"
+#include "io/genericOut.hpp"
+#include "guards/angleGuard.hpp"
+#include "guards/footpadGuard.hpp"
 #include "global.h"
-#include "i2c.h"
-#include "imu.hpp"
+#include "io/i2c.hpp"
+#include "imu/imu.hpp"
 #include "stateTracker.hpp"
 #include "balanceController.hpp"
 #include "boardController.hpp"
 #include "stm32f10x_adc.h"
-#include "angleGuard.hpp"
+
 
 extern "C" void EXTI15_10_IRQHandler(void)
 {

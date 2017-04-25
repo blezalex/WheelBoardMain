@@ -1,6 +1,6 @@
 #pragma once
 #include "global.h"
-#include "guard.hpp"
+#include "guards/guard.hpp"
 #include "arduino.h"
 
 enum State {

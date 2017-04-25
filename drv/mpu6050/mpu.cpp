@@ -9,10 +9,9 @@
 #include "stm32f10x_exti.h"
 #include "misc.h"
 #include "mpu.hpp"
-#include "mpu6050_registers.h"
-#include "i2c.h"
+#include "mpu6050_registers.hpp"
+#include "io/i2c.hpp"
 #include "global.h"
-#include "usart.h"
 
 
 #define MPU6050_ADDRESS     0x68u

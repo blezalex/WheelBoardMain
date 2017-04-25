@@ -4,7 +4,7 @@
 
 #include "Arduino.h"
 #include "global.h"
-#include "mpu.hpp"
+#include "drv/mpu6050/mpu.hpp"
 
 class IMU {
 public:

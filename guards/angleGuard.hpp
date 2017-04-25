@@ -2,6 +2,7 @@
 
 #include "global.h"
 #include "guard.hpp"
+#include "imu/imu.hpp"
 
 class AngleGuard : public Guard {
 public:

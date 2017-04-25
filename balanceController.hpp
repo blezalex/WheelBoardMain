@@ -3,7 +3,7 @@
 
 #include "global.h"
 #include "pid.hpp"
-#include "imu.hpp"
+#include "imu/imu.hpp"
 
 class BalanceController  {
 public:
