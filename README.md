@@ -31,5 +31,3 @@ Connect two on each side in parallel. Then one wire to 3.3v, the other to RC_CH1
 # Warning
 Use at your own risk. No guarantees. This software is not bug-free. Self balancing vehicles are inherently unstable.
 
-# License
-MIT
