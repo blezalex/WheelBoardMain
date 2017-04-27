@@ -27,6 +27,8 @@ Connect two on each side in parallel. Then one wire to 3.3v, the other to RC_CH1
 * [Hub motor with tire 36v 500W 11in](https://www.aliexpress.com/item/11inch-350w-500w-wide-tire-hub-motor-phub-44/32536443206.html)
 * 2x5s 4000mAh lipo
 
+# Frame build log: http://imgur.com/aFqdWp5
+![current frame](http://i.imgur.com/aFqdWp5.jpg)
 
 # Warning
 Use at your own risk. No guarantees. This software is not bug-free. Self balancing vehicles are inherently unstable.
