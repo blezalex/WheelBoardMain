@@ -4,36 +4,27 @@
 #include "stm32f10x_usart.h"
 #include "misc.h"
 
-#define TX_BUFFER_SIZE 50
-uint8_t USART1_txBuffer[TX_BUFFER_SIZE];
-uint8_t USART1_txBufferReadIdx = 0;
-uint8_t USART1_txBufferWriteIdx = 0;
-uint8_t USART1_txStarted = 0;
-
-void USART1_Init() {
+void init(uint16_t rx_pin, uint16_t tx_pin, uint32_t baud, USART_TypeDef* usart, uint8_t IRQ_Channel) {
 	GPIO_InitTypeDef GPIO_InitStructure;
 	USART_InitTypeDef USART_InitStructure;
 
 	/* Enable GPIO clock */
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_AFIO, ENABLE);
 
-	/* Enable UART clock */
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
-
 	/* Configure USART Tx alternate function  */
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_10MHz;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
 
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9;
+	GPIO_InitStructure.GPIO_Pin = tx_pin;
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
 
 	// RX
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;
+	GPIO_InitStructure.GPIO_Pin = rx_pin;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
 
-
-	USART_InitStructure.USART_BaudRate = 115200;
+	USART_StructInit(&USART_InitStructure);
+	USART_InitStructure.USART_BaudRate = baud;
 	USART_InitStructure.USART_WordLength = USART_WordLength_8b;
 	USART_InitStructure.USART_StopBits = USART_StopBits_1;
 	USART_InitStructure.USART_Parity = USART_Parity_No;
@@ -41,57 +32,121 @@ void USART1_Init() {
 	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
 
 	/* USART configuration */
-	USART_Init(USART1, &USART_InitStructure);
+	USART_Init(usart, &USART_InitStructure);
 
 	/* Enable USART */
-	USART_Cmd(USART1, ENABLE);
+	USART_Cmd(usart, ENABLE);
 
 
 	NVIC_InitTypeDef NVIC_InitStructure;
-	NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannel = IRQ_Channel;
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 15;
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 15;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
+
+	USART_ITConfig(usart, USART_IT_RXNE, ENABLE);
+}
+
+bool Usart::Init(USART_TypeDef * device, uint32_t baud) {
+	device_  = device;
+	rxEmpty = true;
+
+	if (device_ == USART1) {
+		RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
+		init(GPIO_Pin_10, GPIO_Pin_9, baud, USART1, USART1_IRQn);
+		return true;
+	}
+
+	if (device_ == USART2) {
+		RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
+		init(GPIO_Pin_3, GPIO_Pin_2, baud, USART2, USART2_IRQn);
+		return true;
+	}
+
+	return false;
+}
+
+uint8_t Usart::Read(uint8_t* data, uint8_t max_size) {
+	if (rxEmpty)
+		return 0;
+
+	int bytes_available = (RX_BUFFER_SIZE + rxBufferWriteIdx - rxBufferReadIdx) % RX_BUFFER_SIZE;
+	int bytes_to_copy = min(max_size, bytes_available);
+	for (int i = 0; i < bytes_to_copy; i++) {
+		data[i] = rxBuffer[rxBufferReadIdx++];
+		if (rxBufferReadIdx >= RX_BUFFER_SIZE)
+			rxBufferReadIdx = 0;
+	}
+	if (rxBufferReadIdx == rxBufferWriteIdx)
+		rxEmpty = true;
+
+	return bytes_to_copy;
 }
 
 
-static void USART1_SendCurrentByteFromBuffer() {
-	 USART_SendData(USART1, USART1_txBuffer[USART1_txBufferReadIdx++]);
-	 if (USART1_txBufferReadIdx >= TX_BUFFER_SIZE) {
-		 USART1_txBufferReadIdx = 0;
+
+void Usart::SendCurrentByteFromBuffer() {
+	 USART_SendData(device_, txBuffer[txBufferReadIdx++]);
+	 if (txBufferReadIdx >= TX_BUFFER_SIZE) {
+		 txBufferReadIdx = 0;
 	 }
 }
 
 // TODO: this function is not thread safe, but works OK in practice :)
-void USART1_Send(uint8_t* data, uint8_t size) {
+void Usart::Send(uint8_t* data, uint8_t size) {
 	// TODO: Check if buffer has enough room, if not block or error ?
 	for (int i = 0; i < size; i++) {
-		USART1_txBuffer[USART1_txBufferWriteIdx] = data[i];
+		txBuffer[txBufferWriteIdx] = data[i];
 
-		if (USART1_txBufferWriteIdx < TX_BUFFER_SIZE - 1)
-			USART1_txBufferWriteIdx++;
+		if (txBufferWriteIdx < TX_BUFFER_SIZE - 1)
+			txBufferWriteIdx++;
 		else
-			USART1_txBufferWriteIdx = 0;
+			txBufferWriteIdx = 0;
 	}
 
-	if (!USART1_txStarted)
-	{
-		USART1_txStarted = 1;
+	if (!txStarted) {
+		txStarted = 1;
 
-		USART1_SendCurrentByteFromBuffer();
-		USART_ITConfig(USART1, USART_IT_TXE, ENABLE);
+		SendCurrentByteFromBuffer();
+		USART_ITConfig(device_, USART_IT_TXE, ENABLE);
+	}
+}
+
+void Usart::handleIRQ(){
+	if(USART_GetITStatus(device_, USART_IT_TXE) != RESET) {
+	 if (txBufferReadIdx != txBufferWriteIdx) {
+		 SendCurrentByteFromBuffer();
+	 }
+	 else {
+		 USART_ITConfig(device_, USART_IT_TXE, DISABLE);
+		 txStarted = 0;
+	 }
+	}
+	if(USART_GetITStatus(device_, USART_IT_RXNE) != RESET) {
+		rxBuffer[rxBufferWriteIdx++] = USART_ReceiveData(device_);
+		rxEmpty = false;
+		if (rxBufferWriteIdx >= RX_BUFFER_SIZE) {
+			rxBufferWriteIdx = 0;
+		}
+	}
+
+	if(USART_GetITStatus(device_, USART_IT_ORE) ||
+			USART_GetITStatus(device_, USART_IT_PE) ||
+			USART_GetITStatus(device_, USART_IT_NE) ||
+			USART_GetITStatus(device_, USART_IT_IDLE)) {
+		USART_ReceiveData(device_);
 	}
 }
 
 extern "C" void USART1_IRQHandler(void) {
-	if(USART_GetITStatus(USART1, USART_IT_TXE) != RESET) {
-	 if (USART1_txBufferReadIdx != USART1_txBufferWriteIdx) {
-		 USART1_SendCurrentByteFromBuffer();
-	 }
-	 else {
-		 USART_ITConfig(USART1, USART_IT_TXE, DISABLE);
-		 USART1_txStarted = 0;
-	 }
-	}
+	Serial1.handleIRQ();
 }
+
+extern "C" void USART2_IRQHandler(void) {
+	Serial2.handleIRQ();
+}
+
+Usart Serial1(USART1);
+Usart Serial2(USART2);
+

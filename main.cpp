@@ -84,13 +84,36 @@ int main(void)
 	GPIO_PinRemapConfig(GPIO_Remap_SWJ_JTAGDisable, ENABLE);
 
 	initArduino();
-	USART1_Init();
+	Serial1.Init(USART1, 115200);
+	Serial2.Init(USART2, 115200);
 
 	PwmOut motor_out;
 	motor_out.init(NEUTRAL_MOTOR_CMD);
 
 	const char msg[] = "Hello world!\n";
-	USART1_Send((uint8_t*)msg, sizeof(msg));
+	Serial1.Send((uint8_t*)msg, sizeof(msg));
+
+	uint16_t last_check_time2 = 0;
+    while(1) { // control loop is interrupt driven. debug info only here.
+    	if ((uint16_t)(millis() - last_check_time2) > 100u) {
+    		last_check_time2 = millis();
+
+//			const char msg[] = "Hello world!\n";
+//			Serial2.Send((uint8_t*)msg, sizeof(msg));
+
+			uint8_t tmp[20];
+			int actual = Serial1.Read(tmp, 20);
+			int data = 0;
+			if (actual > 0)
+				Serial1.Send(tmp, actual);
+			else {
+				char buff[50];
+				int size = sprintf(buff, "%d\n", data);
+				Serial1.Send((uint8_t*)buff, size);
+			}
+		}
+    }
+    return 1;
 
 	i2c_init();
 
@@ -130,9 +153,19 @@ int main(void)
     	if ((uint16_t)(millis() - last_check_time) > 100u) {
 			last_check_time = millis();
 
-			char buff[50];
-    		int size = sprintf(buff, "%d\t%d\n", (int16_t)imu.angles[0], (int16_t)imu.angles[1]);
-    		USART1_Send((uint8_t*)buff, size);
+//			const char msg[] = "Hello world!\n";
+//			Serial2.Send((uint8_t*)msg, sizeof(msg));
+
+			uint8_t tmp[20];
+			int actual = Serial1.Read(tmp, 20);
+			int data = 0;
+			if (actual > 0)
+				Serial1.Send(tmp, actual);
+			else {
+				char buff[50];
+				int size = sprintf(buff, "%d\t%d\t%d\n", (int16_t)imu.angles[0], (int16_t)imu.angles[1], data);
+				Serial1.Send((uint8_t*)buff, size);
+			}
 		}
     }
 }
