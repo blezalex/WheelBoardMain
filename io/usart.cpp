@@ -46,6 +46,7 @@ void init(uint16_t rx_pin, uint16_t tx_pin, uint32_t baud, USART_TypeDef* usart,
 	NVIC_Init(&NVIC_InitStructure);
 
 	USART_ITConfig(usart, USART_IT_RXNE, ENABLE);
+	USART_ITConfig(usart, USART_IT_ORE, ENABLE);
 }
 
 bool Usart::Init(USART_TypeDef * device, uint32_t baud) {
@@ -122,6 +123,7 @@ void Usart::handleIRQ(){
 		 USART_ITConfig(device_, USART_IT_TXE, DISABLE);
 		 txStarted = 0;
 	 }
+	 return;
 	}
 	if(USART_GetITStatus(device_, USART_IT_RXNE) != RESET) {
 		rxBuffer[rxBufferWriteIdx++] = USART_ReceiveData(device_);
@@ -129,13 +131,12 @@ void Usart::handleIRQ(){
 		if (rxBufferWriteIdx >= RX_BUFFER_SIZE) {
 			rxBufferWriteIdx = 0;
 		}
+		return;
 	}
-
-	if(USART_GetITStatus(device_, USART_IT_ORE) ||
-			USART_GetITStatus(device_, USART_IT_PE) ||
-			USART_GetITStatus(device_, USART_IT_NE) ||
-			USART_GetITStatus(device_, USART_IT_IDLE)) {
+	if(USART_GetITStatus(device_, USART_IT_ORE) != RESET) {
+		device_->SR;
 		USART_ReceiveData(device_);
+		return;
 	}
 }
 

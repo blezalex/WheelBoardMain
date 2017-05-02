@@ -26,6 +26,7 @@
 #include "balanceController.hpp"
 #include "boardController.hpp"
 #include "stm32f10x_adc.h"
+#include "drv/esc_status/escStatusReader.hpp"
 
 
 extern "C" void EXTI15_10_IRQHandler(void)
@@ -93,28 +94,6 @@ int main(void)
 	const char msg[] = "Hello world!\n";
 	Serial1.Send((uint8_t*)msg, sizeof(msg));
 
-	uint16_t last_check_time2 = 0;
-    while(1) { // control loop is interrupt driven. debug info only here.
-    	if ((uint16_t)(millis() - last_check_time2) > 100u) {
-    		last_check_time2 = millis();
-
-//			const char msg[] = "Hello world!\n";
-//			Serial2.Send((uint8_t*)msg, sizeof(msg));
-
-			uint8_t tmp[20];
-			int actual = Serial1.Read(tmp, 20);
-			int data = 0;
-			if (actual > 0)
-				Serial1.Send(tmp, actual);
-			else {
-				char buff[50];
-				int size = sprintf(buff, "%d\n", data);
-				Serial1.Send((uint8_t*)buff, size);
-			}
-		}
-    }
-    return 1;
-
 	i2c_init();
 
 	GenericOut status_led(RCC_APB2Periph_GPIOB, GPIOB, GPIO_Pin_4, 1); // red
@@ -145,27 +124,23 @@ int main(void)
 	Guard* guards[] = { &angle_guard, &foot_pad_guard };
 	int guards_count = sizeof(guards) / sizeof(Guard*);
 
-	BoardController main_ctrl(imu, motor_out, status_led, beeper, balance_pid_settings, MOTOR_OUT_AVG_RC, guards, guards_count);
+	BoardController main_ctrl(imu, motor_out, status_led, beeper, balance_pid_settings, MOTOR_OUT_AVG_RC, guards, guards_count, green_led);
 	accGyro.setListener(&main_ctrl);
 
+	EscStatusReader esc_status_reader(&Serial2);
+
 	uint16_t last_check_time = 0;
-    while(1) { // control loop is interrupt driven. debug info only here.
+    while(1) { // background work
+    	// read status update from esc
+    	esc_status_reader.update();
+
+    	// print debug info every 100ms
     	if ((uint16_t)(millis() - last_check_time) > 100u) {
 			last_check_time = millis();
 
-//			const char msg[] = "Hello world!\n";
-//			Serial2.Send((uint8_t*)msg, sizeof(msg));
-
-			uint8_t tmp[20];
-			int actual = Serial1.Read(tmp, 20);
-			int data = 0;
-			if (actual > 0)
-				Serial1.Send(tmp, actual);
-			else {
-				char buff[50];
-				int size = sprintf(buff, "%d\t%d\t%d\n", (int16_t)imu.angles[0], (int16_t)imu.angles[1], data);
-				Serial1.Send((uint8_t*)buff, size);
-			}
+			char buff[50];
+			int size = sprintf(buff, "%d\t%d\t%d\n", (int16_t)imu.angles[0], (int16_t)imu.angles[1], esc_status_reader.esc_status.speed);
+			Serial1.Send((uint8_t*)buff, size);
 		}
     }
 }

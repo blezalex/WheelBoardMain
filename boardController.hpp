@@ -9,7 +9,7 @@
 
 class BoardController  : public UpdateListener  {
 public:
-	BoardController(IMU& imu, PwmOut& motor_out, GenericOut& status_led, GenericOut& beeper, PidSettings& pid_settings, float motor_avg_rc, Guard** guards, int guards_count)
+	BoardController(IMU& imu, PwmOut& motor_out, GenericOut& status_led, GenericOut& beeper, PidSettings& pid_settings, float motor_avg_rc, Guard** guards, int guards_count,  GenericOut& green_led)
 	  : imu_(imu),
 		state_(guards, guards_count),
 		balancer_(imu_, pid_settings),
@@ -19,6 +19,7 @@ public:
 		avg_running_motor_out_(motor_avg_rc),
 		min_motor_out_(MIN_MOTOR_CMD),
 		max_motor_out_(MAX_MOTOR_CMD),
+		green_led_(green_led),
 		speed_(0) {
 	}
 
@@ -76,6 +77,7 @@ private:
 	uint16_t prev_out_;
 	uint16_t min_motor_out_;
 	uint16_t max_motor_out_;
+	GenericOut& green_led_;
 
 	float speed_;
 };

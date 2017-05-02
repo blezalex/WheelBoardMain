@@ -45,6 +45,7 @@
 #define ANGLE_DRIVE 1
 #define ANGLE_STEER 0
 
+#define STATUS_MESSAGE_MIN_GAP 30
 
 
 
