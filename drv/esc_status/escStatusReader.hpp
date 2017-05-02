@@ -6,7 +6,8 @@ class EscStatusReader {
 public:
 	EscStatusReader(Usart* escChannel) : escChannel_(escChannel) { }
 
-	void update() {
+	bool update() {
+		bool have_update = false;
     	uint8_t usart2rx_data[10];
     	uint8_t received_bytes = escChannel_->Read(usart2rx_data, sizeof(usart2rx_data));
     	if (received_bytes != 0) {
@@ -23,10 +24,13 @@ public:
 
     	  			if (31 ^ tmp_message_raw_[0] ^ tmp_message_raw_[1] ^ tmp_message_raw_[2] == tmp_message_raw_[3]) {
     	  				esc_status = tmp_message_;
+    	  				have_update = true;
     	  			}
     			}
     		}
     	}
+
+    	return have_update;
 	}
 
 	ESCMessage esc_status{0, 0, 0, 0};

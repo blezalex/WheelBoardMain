@@ -124,7 +124,7 @@ int main(void)
 	Guard* guards[] = { &angle_guard, &foot_pad_guard };
 	int guards_count = sizeof(guards) / sizeof(Guard*);
 
-	BoardController main_ctrl(imu, motor_out, status_led, beeper, balance_pid_settings, MOTOR_OUT_AVG_RC, guards, guards_count, green_led);
+	BoardController main_ctrl(imu, motor_out, status_led, beeper, balance_pid_settings, MOTOR_OUT_AVG_RC, guards, guards_count, green_led, -25, 0.05);
 	accGyro.setListener(&main_ctrl);
 
 	EscStatusReader esc_status_reader(&Serial2);
@@ -132,14 +132,16 @@ int main(void)
 	uint16_t last_check_time = 0;
     while(1) { // background work
     	// read status update from esc
-    	esc_status_reader.update();
+    	if (esc_status_reader.update()) {
+    		main_ctrl.process_esc_update(esc_status_reader.esc_status);
+    	}
 
     	// print debug info every 100ms
-    	if ((uint16_t)(millis() - last_check_time) > 100u) {
+    	if ((uint16_t)(millis() - last_check_time) > 200u) {
 			last_check_time = millis();
 
 			char buff[50];
-			int size = sprintf(buff, "%d\t%d\t%d\n", (int16_t)imu.angles[0], (int16_t)imu.angles[1], esc_status_reader.esc_status.speed);
+			int size = sprintf(buff, "%d\t%d\n", (int16_t)imu.angles[0], (int16_t)imu.angles[1]);
 			Serial1.Send((uint8_t*)buff, size);
 		}
     }

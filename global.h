@@ -47,6 +47,17 @@
 
 #define STATUS_MESSAGE_MIN_GAP 30
 
+//***** batt mon *************//
+#define BATT_RC 0.008
+#define BATT_VOLT_STATUS_DEVIDER 4.25
+
+#define BAT_CELL_COUNT 10
+#define BAT_MIN_CELL_VOLTAGE 3.0
+#define BAT_THR_CELL_VOLATGE 3.4
+
+//***** temp ****************//
+#define MAX_TEMP 75
+
 
 
 #define DISALLOW_COPY_AND_ASSIGN(TypeName) \

@@ -4,7 +4,7 @@
     <Device manufacturerId="9" manufacturerName="ST" chipId="306" chipName="STM32F103CB" boardId="" boardName=""/>
     <BuildOption>
       <Compile>
-        <Option name="OptimizationLevel" value="0"/>
+        <Option name="OptimizationLevel" value="2"/>
         <Option name="UseFPU" value="0"/>
         <Option name="UserEditCompiler" value="-std=gnu++11"/>
         <Option name="SupportCPlusplus" value="1"/>
