@@ -13,8 +13,8 @@
 #define BOARD_ROTATION_UPSIDE_DOWN_X(XYZ) XYZ[1]*=-1; XYZ[2]*=-1;  // rotated 180 deg around X axis
 
 //****** pad sensors ****//
-#define MIN_PAD_LEVEL 3750 // pad is considered pressed if ADC reads above this value. ADC reads 0 - 4096.
-#define PAD_NO_CONNECT_THR 30 // A crude filter for pad readings. Number of consecutive 'no pressed' reads before pad is marked not pressed.
+#define MIN_PAD_LEVEL 3700 // pad is considered pressed if ADC reads above this value. ADC reads 0 - 4096.
+#define PAD_NO_CONNECT_THR 40 // A crude filter for pad readings. Number of consecutive 'no pressed' reads before pad is marked not pressed.
 
 
 // ****** start mode settings *********/
@@ -25,13 +25,13 @@
 #define START_ANGLE_DRIVE_FULL 6
 #define START_D_MAX_MULTIPLIER 2
 
-#define START_ANGLE_STEER 5
+#define START_ANGLE_STEER 8
 
 #define STOP_ANGLE_DRIVE 14
 #define STOP_ANGLE_STEER 40
 
 #define MOTOR_OUT_AVG_RC 0.008
-#define POWER_OUT_WARNING_THRESHOLD 0.9 // warn when running at 90% or more throttle
+#define POWER_OUT_WARNING_THRESHOLD 0.75 // warn when running at x% or more throttle
 
 
 #define MAX_CHANGE_SINGLE_LOOP 300
@@ -40,7 +40,7 @@
 #define MAX_MOTOR_CMD 2010
 #define NEUTRAL_MOTOR_CMD 1500
 
-#define MOTOR_CMD_RANGE (MAX_MOTOR_CMD - MIN_MOTOR_CMD)
+#define MOTOR_CMD_RANGE (MAX_MOTOR_CMD - NEUTRAL_MOTOR_CMD)
 
 #define ANGLE_DRIVE 1
 #define ANGLE_STEER 0
@@ -48,7 +48,7 @@
 #define STATUS_MESSAGE_MIN_GAP 30
 
 //***** batt mon *************//
-#define BATT_RC 0.008
+#define BATT_RC 0.05
 #define BATT_VOLT_STATUS_DEVIDER 4.25
 
 #define BAT_CELL_COUNT 10

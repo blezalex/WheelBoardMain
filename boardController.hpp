@@ -79,7 +79,7 @@ public:
 		case State::Running:
 			int16_t out = balancer_.compute(update.gyro) + speed_lpf_.compute(speed_) * speed_P_; // Speed compensation, speed positive moving forward (out > 0)
 			motor_out_.set(mapOutToPwm(out));
-			float smoothed_out = avg_running_motor_out_.compute(out); // TODO: check if avg needs to take value after the limit
+			float smoothed_out = avg_running_motor_out_.compute(constrain(out, -MOTOR_CMD_RANGE, MOTOR_CMD_RANGE));
 
 			bool warning_requested = abs(smoothed_out) >= MOTOR_CMD_RANGE * POWER_OUT_WARNING_THRESHOLD;
 			beeper_.setState(warning_requested);

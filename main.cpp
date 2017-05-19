@@ -77,7 +77,7 @@ private:
 int main(void)
 {
 	//PidSettings balance_pid_settings(286*PID_SCALE_FACTOR, 0.825*PID_SCALE_FACTOR, 0.1*PID_SCALE_FACTOR, 4000);
-	PidSettings balance_pid_settings(190, 0.55, 0.1, 4000);
+	PidSettings balance_pid_settings(190, 0.40, 0.05, 10000);
 	SystemInit();
 
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
@@ -114,10 +114,10 @@ int main(void)
 	accGyro.setListener(&waiter);
 	waiter.waitForAccGyroCalibration();
 
-	GenericOut green_led(RCC_APB2Periph_GPIOB, GPIOB, GPIO_Pin_3, 1);
+	GenericOut green_led(RCC_APB2Periph_GPIOB, GPIOB, GPIO_Pin_3, true);
 	green_led.init();
 
-	GenericOut beeper(RCC_APB2Periph_GPIOA, GPIOA, GPIO_Pin_12, 0);
+	GenericOut beeper(RCC_APB2Periph_GPIOA, GPIOA, GPIO_Pin_12, true);
 	beeper.init();
 
 	FootpadGuard foot_pad_guard;

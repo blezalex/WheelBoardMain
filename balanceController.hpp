@@ -15,13 +15,16 @@ public:
 	void reset() {
 		balance_pid_.reset();
 		max_D_multiplier_so_far_ = 0;
+		prev_gyro_update_ = 0;
 	}
 
 	// Compute torque needed while board in normal mode.
 	// Returns torque request based on current imu and gyro readings. Expected range is -MOTOR_CMD_RANGE:MOTOR_CMD_RANGE,
 	// but not limited here to that range.
 	int16_t compute(const int16_t* gyro_update) {
-		return balance_pid_.compute( - imu_.angles[ANGLE_DRIVE], gyro_update[ANGLE_DRIVE]);
+		int32_t avg_gyro_upd = (gyro_update[ANGLE_DRIVE] + prev_gyro_update_) / 2; // ESC refresh rate is 300 hz, controller is 1000hz. Avg last 2 readings to get closer to ctrl refresh rate
+		prev_gyro_update_ = gyro_update[ANGLE_DRIVE];
+		return balance_pid_.compute( - imu_.angles[ANGLE_DRIVE], avg_gyro_upd);
 	}
 
 	// Compute torque needed while board in starting up phase (coming from one side to balanced state).
@@ -41,6 +44,7 @@ public:
 
 private:
 	const IMU& imu_;
+	int16_t prev_gyro_update_ = 0;
 	float max_D_multiplier_so_far_ = 0;
 	PidController balance_pid_;
 };
