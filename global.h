@@ -14,7 +14,7 @@
 
 //****** pad sensors ****//
 #define MIN_PAD_LEVEL 3700 // pad is considered pressed if ADC reads above this value. ADC reads 0 - 4096.
-#define PAD_NO_CONNECT_THR 40 // A crude filter for pad readings. Number of consecutive 'no pressed' reads before pad is marked not pressed.
+#define PAD_NO_CONNECT_THR 300 // A crude filter for pad readings. Number of consecutive 'no pressed' reads before pad is marked not pressed.
 
 
 // ****** start mode settings *********/
@@ -31,7 +31,7 @@
 #define STOP_ANGLE_STEER 40
 
 #define MOTOR_OUT_AVG_RC 0.008
-#define POWER_OUT_WARNING_THRESHOLD 0.75 // warn when running at x% or more throttle
+#define POWER_OUT_WARNING_THRESHOLD 0.8 // warn when running at x% or more throttle
 
 
 #define MAX_CHANGE_SINGLE_LOOP 300

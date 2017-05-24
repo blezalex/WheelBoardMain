@@ -77,7 +77,7 @@ private:
 int main(void)
 {
 	//PidSettings balance_pid_settings(286*PID_SCALE_FACTOR, 0.825*PID_SCALE_FACTOR, 0.1*PID_SCALE_FACTOR, 4000);
-	PidSettings balance_pid_settings(190, 0.40, 0.05, 10000);
+	PidSettings balance_pid_settings(175, 0.35, 0.05, 10000);
 	SystemInit();
 
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
