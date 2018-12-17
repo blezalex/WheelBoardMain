@@ -1,0 +1,75 @@
+syntax = "proto2";
+
+// CMD format:
+// Byte 0: Fixed 0x1 protocol header/version
+// Byte 1: packet length 3-255 (inclues all transfered bytes: header, len,
+// msgId, msgBody and CRC16)
+// Byte 2: message id
+// Byte 3-n message body
+// Byte n-1 CRC16
+
+enum RequestId {
+  MSG_NONE = 0;
+  READ_CONFIG = 1;
+  WRITE_CONFIG = 2;
+  GET_STATS = 3;
+  CALLIBRATE_ACC = 4;
+  SAVE_CONFIG = 5;
+}
+
+enum ReplyId {
+  NO_REPLY = 0;
+  GENERIC_OK = 1;
+  GENERIC_FAIL = 2;
+  STATS = 3;
+  CONFIG = 4;
+}
+
+message Config {
+  message Callibration {
+    required int32 acc_x = 1 [default = 0];
+    required int32 acc_y = 2 [default = 0];
+    required int32 acc_z = 3 [default = 0];
+  }
+
+  message PidConfig {
+    required float p = 1 [default = 175];
+    required float d = 2 [default = 0.35];
+    required float i = 3 [default = 0.05];
+    required float max_i = 4 [default = 10000];
+  }
+
+  optional Callibration callibration = 1;
+
+  optional PidConfig balance_pid = 2;
+
+  message FootPadSettings {
+    optional float filter_rc = 1;
+    optional int32 min_level_to_start = 2;
+    optional int32 min_level_to_continue = 3;
+  }
+
+  optional FootPadSettings foot_pad = 3;
+
+  // min value is 1 = linear
+  optional float balance_expo = 4;
+
+  // scale input angel in deg by deviding by 'balance_angle_scaling'
+  optional float balance_angle_scaling = 5;
+
+  optional float beep_rc = 6;
+
+  // 0-1, 1 = 100% of output power = no warning at all
+  optional float beep_threshold = 7;
+}
+
+message Stats {
+  optional float batt_voltage = 1;
+  optional float batt_current = 2;
+  optional float motor_current = 3;
+  repeated int32 pad_pressure = 4;
+  optional float speed = 5;
+  optional float distance_traveled = 6;
+  optional float drive_angle = 7;
+  optional float stear_angle = 8;
+}

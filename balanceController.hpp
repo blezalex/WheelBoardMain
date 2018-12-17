@@ -7,7 +7,7 @@
 
 class BalanceController  {
 public:
-	BalanceController(const IMU& imu, const PidSettings& pid_settings) :
+	BalanceController(const IMU& imu, const Config_PidConfig* pid_settings) :
 		imu_(imu), balance_pid_(pid_settings) {
 		reset();
 	}

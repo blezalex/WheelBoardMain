@@ -1,29 +1,11 @@
 #ifndef _PID_H
 #define _PID_H
 #include "global.h"
-
-struct PidSettings
-{
-  PidSettings() {
-  	PidSettings(0, 0, 0, 0);
-  }
-
-  PidSettings(float p, float d, float i, float maxI) {
-    P = p;
-    D = d;
-    I = i;
-    MaxI = maxI;
-  }
-
-  float P;
-  float D;
-  float I;
-  float MaxI;
-};
+#include "drv/comms/protocol.pb.h"
 
 class PidController {
 public:
-	PidController(const PidSettings& params)
+	PidController(const Config_PidConfig* params)
 		: _params(params) {
 	    reset();
 	}
@@ -33,10 +15,10 @@ public:
 	}
 
 	float compute(float error, float de) {
-		float out = error * _params.P + de * _params.D + _sumI * _params.I;
+		float out = error * _params->p + de * _params->d + _sumI * _params->i;
 
 		_prevError = error;
-		_sumI = constrain(_sumI + error, -_params.MaxI, _params.MaxI);
+		_sumI = constrain(_sumI + error, -_params->max_i, _params->max_i);
 
 		return out;
 	}
@@ -47,7 +29,7 @@ public:
 	}
 
 private:
-	const PidSettings& _params;
+	const Config_PidConfig* _params;
 	float _prevError;
 	float _sumI;
 

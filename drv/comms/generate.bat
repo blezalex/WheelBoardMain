@@ -1,0 +1,1 @@
+C:\Users\Alex\Desktop\WheelBoard\nanopb-0.3.9.2-windows-x86/generator-bin/protoc --nanopb_out=. protocol.proto

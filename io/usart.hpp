@@ -11,8 +11,10 @@ public:
 
 	}
 	bool Init(USART_TypeDef * device, uint32_t baud);
-	void Send(uint8_t* data, uint8_t size);
+	void Send(const uint8_t* data, uint8_t size);
 	uint8_t Read(uint8_t* data, uint8_t max_size);
+
+	bool HasData();
 	void handleIRQ();
 
 private:

@@ -10,7 +10,7 @@
 
 class BoardController  : public UpdateListener  {
 public:
-	BoardController(IMU& imu, PwmOut& motor_out, GenericOut& status_led, GenericOut& beeper, PidSettings& pid_settings,
+	BoardController(IMU& imu, PwmOut& motor_out, GenericOut& status_led, GenericOut& beeper, Config_PidConfig* pid_settings,
 			float motor_avg_rc, Guard** guards, int guards_count,  GenericOut& green_led, float speed_P, float speed_RC)
 	  : imu_(imu),
 		state_(guards, guards_count),
