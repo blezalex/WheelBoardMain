@@ -64,15 +64,15 @@ bool saveToBufferFn(pb_ostream_t *stream, const uint8_t *buf, size_t count) {
 	return true;
 }
 
-int16_t saveSettingsToBuffer(uint8_t* buffer, int16_t max_size, const Config& config) {
+int16_t saveProtoToBuffer(uint8_t* buffer, int16_t max_size, const pb_field_t fields[], const void *src_struct) {
 	pb_ostream_t sizestream = { 0 };
-	pb_encode(&sizestream, Config_fields, &config);
+	pb_encode(&sizestream, fields, src_struct);
 
 	if (sizestream.bytes_written > max_size)
 		return -1;
 
-	pb_ostream_t save_stream = { &saveToBufferFn, &buffer, CONFIG_SIZE_MAX, 0 };
-	if (!pb_encode(&save_stream, Config_fields, &config))
+	pb_ostream_t save_stream = { &saveToBufferFn, &buffer, max_size, 0 };
+	if (!pb_encode(&save_stream, fields, src_struct))
 		return -1;
 
 	return sizestream.bytes_written;

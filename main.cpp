@@ -100,14 +100,24 @@ int main(void)
 		const char msg[] = "Config DEFAULT\n";
 	}
 
+	i2c_init();
+
+	GenericOut status_led(RCC_APB2Periph_GPIOB, GPIOB, GPIO_Pin_4, 1); // red
+	status_led.init();
+	status_led.setState(0);
+
+	//accGyro.applyAccZeroOffsets(0, 0, 0); // TODO: Implement ACC calibration function and save values to EEPROM
+	accGyro.init(MPU6050_LPF_98HZ);
+
 	Communicator comms(&Serial1);
     while(1) { // background work
+
     	uint8_t comms_msg = comms.update();
     	switch (comms_msg) {
     	case RequestId_READ_CONFIG:
     	{
     		uint8_t data[256];
-    		int16_t data_len = saveSettingsToBuffer(data, sizeof(data), cfg);
+    		int16_t data_len = saveProtoToBuffer(data, sizeof(data), Config_fields,  &cfg);
     		if (data_len != -1) {
     			comms.SendMsg(ReplyId_CONFIG, data, data_len);
     		}
@@ -126,6 +136,21 @@ int main(void)
     			comms.SendMsg(ReplyId_GENERIC_FAIL);
     		break;
     	}
+    	case RequestId_GET_STATS:
+    	{
+    		Stats stats = Stats_init_default;
+//    		stats.drive_angle = imu.angles[0];
+//    		stats.stear_angle = imu.angles[1];
+
+    		uint8_t data[256];
+			int16_t data_len = saveProtoToBuffer(data, sizeof(data), Stats_fields,  &stats);
+    		if (data_len != -1) {
+    			comms.SendMsg(ReplyId_STATS, data, data_len);
+    		}
+    		else {
+    			comms.SendMsg(ReplyId_GENERIC_FAIL);
+    		}
+    	}
 
     	case RequestId_SAVE_CONFIG:
     		saveSettingsToFlash(cfg);
@@ -133,20 +158,6 @@ int main(void)
     		break;
     	}
     }
-
-	i2c_init();
-
-	GenericOut status_led(RCC_APB2Periph_GPIOB, GPIOB, GPIO_Pin_4, 1); // red
-	status_led.init();
-
-	status_led.setState(0);
-	status_led.setState(1);
-
-	status_led.toggle();
-	status_led.toggle();
-
-	// accGyro.applyAccZeroOffsets(0, 0, 0); // TODO: Implement ACC calibration function and save values to EEPROM
-	accGyro.init(MPU6050_LPF_98HZ);
 
 	IMU imu;
 	AngleGuard angle_guard(imu);
@@ -167,25 +178,6 @@ int main(void)
 	BoardController main_ctrl(imu, motor_out, status_led, beeper, &cfg.balance_pid, MOTOR_OUT_AVG_RC, guards, guards_count, green_led, -25, 0.05);
 	accGyro.setListener(&main_ctrl);
 
-	EscStatusReader esc_status_reader(&Serial2);
 
 
-	uint16_t last_check_time = 0;
-    while(1) { // background work
-    	// read status update from esc
-    	if (esc_status_reader.update()) {
-    		main_ctrl.process_esc_update(esc_status_reader.esc_status);
-    	}
-
-    	/*
-    	// print debug info every 100ms
-    	if ((uint16_t)(millis() - last_check_time) > 200u) {
-			last_check_time = millis();
-
-			char buff[50];
-			int size = sprintf(buff, "%d\t%d\n", (int16_t)imu.angles[0], (int16_t)imu.angles[1]);
-			Serial1.Send((uint8_t*)buff, size);
-		}
-		*/
-    }
 }

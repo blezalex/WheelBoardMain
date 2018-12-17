@@ -1,4 +1,5 @@
 syntax = "proto2";
+option java_package = "proto";
 
 // CMD format:
 // Byte 0: Fixed 0x1 protocol header/version
@@ -70,6 +71,6 @@ message Stats {
   repeated int32 pad_pressure = 4;
   optional float speed = 5;
   optional float distance_traveled = 6;
-  optional float drive_angle = 7;
-  optional float stear_angle = 8;
+  required float drive_angle = 7;
+  required float stear_angle = 8;
 }
