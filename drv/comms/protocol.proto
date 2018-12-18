@@ -33,6 +33,8 @@ message Config {
     required int32 acc_z = 3 [default = 0];
   }
 
+  optional Callibration callibration = 1;
+  
   message PidConfig {
     required float p = 1 [default = 175];
     required float d = 2 [default = 0.35];
@@ -40,37 +42,37 @@ message Config {
     required float max_i = 4 [default = 10000];
   }
 
-  optional Callibration callibration = 1;
-
   optional PidConfig balance_pid = 2;
 
   message FootPadSettings {
-    optional float filter_rc = 1;
-    optional int32 min_level_to_start = 2;
-    optional int32 min_level_to_continue = 3;
+    required float filter_rc = 1 [default= 0.05];
+    required int32 min_level_to_start = 2 [default = 3700];
+    required int32 min_level_to_continue = 3 [default = 3500];
   }
 
   optional FootPadSettings foot_pad = 3;
 
   // min value is 1 = linear
-  optional float balance_expo = 4;
+  optional float balance_expo = 4 [default = 1];
 
   // scale input angel in deg by deviding by 'balance_angle_scaling'
-  optional float balance_angle_scaling = 5;
+  optional float balance_angle_scaling = 5 [default = 1];
 
-  optional float beep_rc = 6;
+  optional float beep_rc = 6 [default = 0.05];
 
   // 0-1, 1 = 100% of output power = no warning at all
-  optional float beep_threshold = 7;
+  optional float beep_threshold = 7  [default = 0.75];
 }
 
 message Stats {
   optional float batt_voltage = 1;
   optional float batt_current = 2;
   optional float motor_current = 3;
-  repeated int32 pad_pressure = 4;
   optional float speed = 5;
   optional float distance_traveled = 6;
   required float drive_angle = 7;
   required float stear_angle = 8;
+  
+  required uint32 pad_pressure1 = 9;
+  required uint32 pad_pressure2 = 10;
 }

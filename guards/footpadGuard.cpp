@@ -12,7 +12,7 @@ void initADCs() {
 	GPIO_InitTypeDef GPIO_InitStructure;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
 	GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_AIN;
-	GPIO_InitStructure.GPIO_Pin   = GPIO_Pin_10 | GPIO_Pin_11 ;
+	GPIO_InitStructure.GPIO_Pin   = GPIO_Pin_0 | GPIO_Pin_1 ;
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
 
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1, ENABLE);
@@ -26,8 +26,8 @@ void initADCs() {
 	ADC_InitStructure.ADC_NbrOfChannel = 2;
 	ADC_Init ( ADC1, &ADC_InitStructure);
 
-	ADC_RegularChannelConfig(ADC1, ADC_Channel_0, 1, ADC_SampleTime_28Cycles5);
-	ADC_RegularChannelConfig(ADC1, ADC_Channel_1, 2, ADC_SampleTime_28Cycles5);
+	ADC_RegularChannelConfig(ADC1, ADC_Channel_0, 1, ADC_SampleTime_239Cycles5);
+	ADC_RegularChannelConfig(ADC1, ADC_Channel_1, 2, ADC_SampleTime_239Cycles5);
 
 	ADC_Cmd (ADC1, ENABLE);
 
@@ -57,32 +57,20 @@ void initADCs() {
 }
 
 void FootpadGuard::Update() {
-	for (int id = 0; id < 2; id++) {
-		uint16_t val = ADC1_Buffer[id];
-
-		if (val > MIN_PAD_LEVEL) {
-			pad_levels_[id] = val;
-			no_connect_cnt_[id] = 0;
-		}
-		else {
-			if (no_connect_cnt_[id] > PAD_NO_CONNECT_THR)
-			{
-				pad_levels_[id] = val;
-			}
-			else {
-				no_connect_cnt_[id]++;
-			}
-		}
+	for (int i = 0; i < 2; i++) {
+		padLevelFilter[0].compute(ADC1_Buffer[0]);
+		padLevelFilter[1].compute(ADC1_Buffer[1]);
 	}
 }
 
-FootpadGuard::FootpadGuard() : pad_levels_{ 0, 0 }, no_connect_cnt_{ 0, 0 } {
+FootpadGuard::FootpadGuard(const Config_FootPadSettings* settings)
+ : padLevelFilter {&settings_->filter_rc, &settings_->filter_rc}, settings_(settings) {
 	initADCs();
 }
 
 bool FootpadGuard::CanStart() {
-	return pad_levels_[0] > MIN_PAD_LEVEL && pad_levels_[1] > MIN_PAD_LEVEL;
+	return padLevelFilter[0].getVal() > settings_->min_level_to_start && padLevelFilter[1].getVal() > settings_->min_level_to_start;
 }
 bool FootpadGuard::MustStop() {
-	return pad_levels_[0] < MIN_PAD_LEVEL || pad_levels_[1] < MIN_PAD_LEVEL;
+	return padLevelFilter[0].getVal() < settings_->min_level_to_continue || padLevelFilter[1].getVal() < settings_->min_level_to_continue;
 }

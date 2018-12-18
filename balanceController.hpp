@@ -7,8 +7,8 @@
 
 class BalanceController  {
 public:
-	BalanceController(const IMU& imu, const Config_PidConfig* pid_settings) :
-		imu_(imu), balance_pid_(pid_settings) {
+	BalanceController(const Config* settings, const IMU& imu) :
+		settings_(settings), imu_(imu), balance_pid_(&settings->balance_pid) {
 		reset();
 	}
 
@@ -43,6 +43,7 @@ public:
 	}
 
 private:
+	const Config* settings_;
 	const IMU& imu_;
 	int16_t prev_gyro_update_ = 0;
 	float max_D_multiplier_so_far_ = 0;

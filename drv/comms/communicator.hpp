@@ -5,6 +5,7 @@
 #define kHeaderPrefixSize 2 // Id + 8 byte len
 #define kSuffixSize 2 // CRC
 #define kHeaderSize (kHeaderPrefixSize + kSuffixSize)
+#define kMsgTimeoutMs 500u
 
 class Communicator {
 public:
@@ -55,7 +56,7 @@ public:
 			return false;
 
 		uint16_t time = millis();
-		if ((uint16_t)(time - last_uart_data_time_) > STATUS_MESSAGE_MIN_GAP) {
+		if ((uint16_t)(time - last_uart_data_time_) > kMsgTimeoutMs) {
 			buffer_pos_ = 0;
 		}
 		last_uart_data_time_ = time;

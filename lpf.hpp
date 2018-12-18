@@ -1,33 +1,51 @@
 #pragma once
-#include "global.h"
+
 
 class LPF
 {
 public:
-	LPF(float rc)
-	 : rc_(rc){
+	LPF(const float* rc)
+	{
+		_rc = rc;
 		reset();
 	}
 
-	float compute(float value) {
-		prev_value_ = prev_value_ * (1 - rc_) + value * rc_;
+	float compute(float value)
+	{
+		_prevValue = _prevValue * (1-*_rc) + value * *_rc;
 
-		return prev_value_;
+		return _prevValue;
 	}
 
-	float getVal() { return prev_value_; }
+	float compute(float value, bool asym)
+	{
+		if (value > _prevValue)
+		{
+			float rcUp = *_rc * 2;
+			if (rcUp > 0)
+				rcUp = 1;
+
+			_prevValue = _prevValue * (1-rcUp) + value * rcUp;
+		}
+		else {
+			_prevValue = _prevValue * (1-*_rc) + value * *_rc;
+		}
+
+		return _prevValue;
+	}
+
+	float getVal() const { return _prevValue; }
 
 	void reset() {
 		reset(0);
 	}
 
 	void reset(float value) {
-		prev_value_ = value;
+		_prevValue = value;
 	}
 
-private:
-	float prev_value_;
-	float rc_;
+	const float *_rc;
 
-	DISALLOW_COPY_AND_ASSIGN(LPF);
+private:
+	float _prevValue;
 };

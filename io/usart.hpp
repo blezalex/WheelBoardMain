@@ -12,6 +12,7 @@ public:
 	}
 	bool Init(USART_TypeDef * device, uint32_t baud);
 	void Send(const uint8_t* data, uint8_t size);
+	void Send(const char* data, uint8_t size) { Send((const uint8_t*)data, size); }
 	uint8_t Read(uint8_t* data, uint8_t max_size);
 
 	bool HasData();

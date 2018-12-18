@@ -2,19 +2,26 @@
 
 #include "global.h"
 #include "guard.hpp"
+#include "lpf.hpp"
+#include "drv/comms/protocol.pb.h"
 
 class FootpadGuard : public Guard {
 public:
-	FootpadGuard();
+	FootpadGuard(const Config_FootPadSettings* settings);
 
 	bool CanStart();
 	bool MustStop();
 
 	void Update();
 
+	uint16_t getLevel(int i) {
+		return (uint16_t)padLevelFilter[i].getVal();
+	}
+
 private:
-	uint16_t pad_levels_[2];
-	uint16_t no_connect_cnt_[2];
+	LPF padLevelFilter[2];
+
+	const Config_FootPadSettings* settings_;
 
 	DISALLOW_COPY_AND_ASSIGN(FootpadGuard);
 };
