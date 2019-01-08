@@ -24,6 +24,7 @@ enum ReplyId {
   GENERIC_FAIL = 2;
   STATS = 3;
   CONFIG = 4;
+  CRC_MISMATCH = 5;
 }
 
 message Config {
@@ -42,7 +43,7 @@ message Config {
     required float max_i = 4 [default = 10000];
   }
 
-  optional PidConfig balance_pid = 2;
+  required PidConfig balance_pid = 2;
 
   message FootPadSettings {
     required float filter_rc = 1 [default= 0.05];
@@ -50,18 +51,26 @@ message Config {
     required int32 min_level_to_continue = 3 [default = 3500];
   }
 
-  optional FootPadSettings foot_pad = 3;
+  required FootPadSettings foot_pad = 3;
 
-  // min value is 1 = linear
-  optional float balance_expo = 4 [default = 1];
+  message BalancingConfig {
+  	// min value is 1 = linear
+	required float balance_expo = 1 [default = 1];
+	
+	// scale input angel in deg by deviding by 'balance_angle_scaling'
+	required float balance_angle_scaling = 2 [default = 1];
+  }
+  
+  required BalancingConfig balance_settings = 4;
 
-  // scale input angel in deg by deviding by 'balance_angle_scaling'
-  optional float balance_angle_scaling = 5 [default = 1];
+  message Misc {
+    required float beep_rc = 6 [default = 0.05];
 
-  optional float beep_rc = 6 [default = 0.05];
-
-  // 0-1, 1 = 100% of output power = no warning at all
-  optional float beep_threshold = 7  [default = 0.75];
+  	// 0-1, 1 = 100% of output power = no warning at all
+  	required float beep_threshold = 7  [default = 0.75];
+  }
+  
+  required Misc misc = 5;
 }
 
 message Stats {

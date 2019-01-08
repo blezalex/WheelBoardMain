@@ -19,7 +19,7 @@ public:
 		motor_out_(motor_out),
 		status_led_(status_led),
 		beeper_(beeper),
-		avg_running_motor_out_(&settings->beep_rc),
+		avg_running_motor_out_(&settings->misc.beep_rc),
 		min_motor_out_(MIN_MOTOR_CMD),
 		max_motor_out_(MAX_MOTOR_CMD),
 		green_led_(green_led){
@@ -60,7 +60,7 @@ public:
 			motor_out_.set(mapOutToPwm(out));
 			float smoothed_out = avg_running_motor_out_.compute(constrain(out, -MOTOR_CMD_RANGE, MOTOR_CMD_RANGE));
 
-			bool warning_requested = abs(smoothed_out) >= MOTOR_CMD_RANGE * settings_->beep_threshold;
+			bool warning_requested = abs(smoothed_out) >= MOTOR_CMD_RANGE * settings_->misc.beep_threshold;
 			beeper_.setState(warning_requested);
 			break;
 		}

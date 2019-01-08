@@ -68,7 +68,7 @@ bool Usart::Init(USART_TypeDef * device, uint32_t baud) {
 	return false;
 }
 
-uint8_t Usart::Read(uint8_t* data, uint8_t max_size) {
+int16_t Usart::Read(uint8_t* data, int16_t max_size) {
 	if (rxEmpty)
 		return 0;
 
@@ -97,7 +97,7 @@ void Usart::SendCurrentByteFromBuffer() {
 }
 
 // TODO: this function is not thread safe, but works OK in practice :)
-void Usart::Send(const uint8_t* data, uint8_t size) {
+void Usart::Send(const uint8_t* data, int16_t size) {
 	// TODO: Check if buffer has enough room, if not block or error ?
 	for (int i = 0; i < size; i++) {
 		txBuffer[txBufferWriteIdx] = data[i];

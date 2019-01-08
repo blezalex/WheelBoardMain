@@ -191,8 +191,8 @@ int main(void)
     			comms.SendMsg(ReplyId_GENERIC_OK);
     		else
     			comms.SendMsg(ReplyId_GENERIC_FAIL);
-    		int size = sprintf((char*)data, "%u\n", diff);
-    		Serial1.Send(data, size);
+//    		int size = sprintf((char*)data, "%u\n", diff);
+//    		Serial1.Send(data, size);
     		break;
     	}
     	case RequestId_GET_STATS:
