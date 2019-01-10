@@ -7,7 +7,7 @@
 
 inline int sgn(float val) { return (0 < val) - (val < 0); }
 
-inline float applyExpoReal(float x, float k) { return sgn(x) * pow(abs(x), k); }
+inline float applyExpoReal(float x, float k) { return sgn(x) * powf(fabs(x), k); }
 
 // TODO: chck if gyro needs to be negated!!!!!!!!!!!!!!!!!!!!!!
 

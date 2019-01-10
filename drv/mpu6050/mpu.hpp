@@ -47,21 +47,33 @@ public:
 		return gyroCalibrationIterationsLeft_ <= 0;
 	}
 
+	inline bool accCalibrationComplete() {
+		return accCalibrationIterationsLeft_ <= 0;
+	}
+
+	void callibrateAcc();
+
 	void applyAccZeroOffsets(int16_t* offsets_x_y_z) {
 		for (int i = 0; i < 3; i++) {
 			accZeroOffsets_[i] = offsets_x_y_z[i];
 		}
 	}
 
+	const int16_t* getAccOffsets() {
+		return accZeroOffsets_;
+	}
+
 private:
-	void handleGyroData(int16_t* gyro, uint8_t* rawData);
-	void handleAccData(int16_t* acc,  uint8_t* rawData);
+	inline void handleGyroData(int16_t* gyro, uint8_t* rawData);
+	inline void handleAccData(int16_t* acc, int16_t* gyro,  uint8_t* rawData);
 
 	UpdateListener* listener_;
 
 	int16_t accZeroOffsets_[3];
 
-	int16_t gyroCalibrationIterationsLeft_;
+	volatile int32_t gyroCalibrationIterationsLeft_;
+	volatile int32_t accCalibrationIterationsLeft_;
+
 	int32_t gyroCalibrationAccumulator_[3];
 	int16_t gyroZeroOffsets_[3]; // calculated internally
 };

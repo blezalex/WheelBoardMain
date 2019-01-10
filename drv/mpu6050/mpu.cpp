@@ -107,17 +107,19 @@ void MPU_DmaInit() {
 
 Mpu accGyro;
 
+void Mpu::callibrateAcc() {
+	accCalibrationIterationsLeft_ = GYRO_CALIBRATION_ITERATIONS_REQUIRED;
+}
+
 void Mpu::handleRawData(uint8_t* rawData) {
 	MpuUpdate update;
 	handleGyroData(update.gyro, rawData+8); // first 6 are ACC data, then 2 temperature and next 6 are gyro data
-	handleAccData(update.acc, rawData);
-
-	BOARD_ROTATION_MACRO(update.gyro);
-	BOARD_ROTATION_MACRO(update.acc);
+	handleAccData(update.acc, update.gyro, rawData);
 
 	if (listener_ != nullptr) {
 		listener_->processUpdate(update);
 	}
+
 	data_processed = true;
 }
 
@@ -131,10 +133,20 @@ inline int16_t getAccVal(uint8_t* rawData, uint8_t axis) {
 	return ((int16_t)((rawData[axis*2]<<8) | rawData[axis*2 + 1]))>>3;
 }
 
-void Mpu::handleAccData(int16_t* acc,  uint8_t* rawData) {
+void Mpu::handleAccData(int16_t* acc, int16_t* gyro, uint8_t* rawData) {
 	acc[0] = -getAccVal(rawData, 1);
 	acc[1] = -getAccVal(rawData, 0);
 	acc[2] =  getAccVal(rawData, 2);
+	BOARD_ROTATION_MACRO(acc);
+	if (accCalibrationIterationsLeft_ > 0) {
+		if (--accCalibrationIterationsLeft_ == 0) {
+			accZeroOffsets_[0] = acc[0];
+			accZeroOffsets_[1] = acc[1];
+			accZeroOffsets_[2] = acc[2] - ACC_1G;
+		}
+		if (gyro[0] > GYRO_CALIBRATION_MAX_DIFF || gyro[1] > GYRO_CALIBRATION_MAX_DIFF || gyro[2] > GYRO_CALIBRATION_MAX_DIFF)
+			accCalibrationIterationsLeft_ = GYRO_CALIBRATION_ITERATIONS_REQUIRED;
+	}
 	applyZeroOffset(acc, accZeroOffsets_);
 }
 
@@ -146,7 +158,7 @@ void Mpu::handleGyroData(int16_t* gyro,  uint8_t* rawData) {
 	gyro[0] =  getGyroVal(rawData, 1);
 	gyro[1] =  getGyroVal(rawData, 0);
 	gyro[2] = -getGyroVal(rawData, 2);
-
+	BOARD_ROTATION_MACRO(gyro);
 	if (calibrationComplete()) {
 		applyZeroOffset(gyro, gyroZeroOffsets_);
 	}

@@ -76,6 +76,11 @@ private:
 
 uint8_t scratch[255];
 
+void applyCalibrationConfig(const Config& cfg, Mpu* accGyro) {
+	int16_t acc_offsets[3] =  { (int16_t)cfg.callibration.acc_x, (int16_t)cfg.callibration.acc_y, (int16_t)cfg.callibration.acc_z };
+	accGyro->applyAccZeroOffsets(acc_offsets);
+}
+
 int main(void)
 {
 	SystemInit();
@@ -111,6 +116,7 @@ int main(void)
 	if (readSettingsFromFlash(&cfg)) {
 		const char msg[] = "Config OK\n";
 		Serial1.Send((uint8_t*)msg, sizeof(msg));
+		applyCalibrationConfig(cfg, &accGyro);
 	}
 	else {
 		cfg = Config_init_default;
@@ -132,8 +138,7 @@ int main(void)
 	InitWaiter waiter(&status_led, &imu, &angle_guard); 	// wait for angle. Wait for pads too?
 	accGyro.setListener(&waiter);
 
-	int16_t acc_offsets[3] =  { (int16_t)cfg.callibration.acc_x, (int16_t)cfg.callibration.acc_y, (int16_t)cfg.callibration.acc_z };
-	accGyro.applyAccZeroOffsets(acc_offsets);
+
 	accGyro.init(MPU6050_LPF_98HZ);
 
 	waiter.waitForAccGyroCalibration();
@@ -206,18 +211,27 @@ int main(void)
 
     	case RequestId_WRITE_CONFIG:
     	{
+    		Config_Callibration c = cfg.callibration;
     		bool good = readSettingsFromBuffer(&cfg, comms.data(), comms.data_len());
     		if (good)
     			comms.SendMsg(ReplyId_GENERIC_OK);
     		else
     			comms.SendMsg(ReplyId_GENERIC_FAIL);
+    		if (!cfg.has_callibration) // use own calibration if not received one.
+    		{
+    			cfg.callibration = c;
+    			cfg.has_callibration = true;
+    		}
+    		else {
+    			applyCalibrationConfig(cfg, &accGyro);
+    		}
     		break;
     	}
     	case RequestId_GET_STATS:
     	{
     		Stats stats = Stats_init_default;
-    		stats.drive_angle = imu.angles[0];
-    		stats.stear_angle = imu.angles[1];
+    		stats.drive_angle = imu.angles[ANGLE_DRIVE];
+    		stats.stear_angle = imu.angles[ANGLE_STEER];
     		stats.pad_pressure1 = foot_pad_guard.getLevel(0);
     		stats.pad_pressure2 = foot_pad_guard.getLevel(1);
 			int16_t data_len = saveProtoToBuffer(scratch, sizeof(scratch), Stats_fields,  &stats);
@@ -230,7 +244,14 @@ int main(void)
     		break;
     	}
     	case RequestId_CALLIBRATE_ACC:
-    		// TODO: implement callibration
+    		comms.SendMsg(ReplyId_GENERIC_OK);
+    		accGyro.callibrateAcc();
+    		while (!accGyro.accCalibrationComplete())
+    			IWDG_ReloadCounter();
+    		cfg.has_callibration = true;
+    		cfg.callibration.acc_x = accGyro.getAccOffsets()[0];
+    		cfg.callibration.acc_y = accGyro.getAccOffsets()[1];
+    		cfg.callibration.acc_z = accGyro.getAccOffsets()[2];
     		comms.SendMsg(ReplyId_GENERIC_OK);
     		break;
 
