@@ -37,7 +37,7 @@ public:
 	  {}
 
 	void init(uint8_t accLowPassFilterValue);
-	void handleRawData(uint8_t* data);
+	inline void handleRawData(uint8_t* data);
 
 	void setListener(UpdateListener* listener) {
 		listener_ = listener;

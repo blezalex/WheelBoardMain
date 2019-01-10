@@ -39,7 +39,13 @@ unsigned char MPU6050_Rx_Buffer[6+2+6];
 #define BOARD_ROTATION_MACRO(XYZ)  {}
 #endif
 
+volatile bool data_processed = true;
+
 void mpuHandleDataReady() {
+	if (!data_processed)
+		return;
+
+	data_processed = false;
 	i2c_DmaRead(MPU6050_ADDRESS, MPU6050_ACCEL_XOUT_H, MPU6050_DMA_Channel, 14);
 }
 
@@ -64,8 +70,8 @@ void MPU_DataReadyIntInit() {
 
     NVIC_InitTypeDef NVIC_InitStructure;
 	NVIC_InitStructure.NVIC_IRQChannel = EXTI15_10_IRQn; //I2C2 connect to channel 5 of DMA1
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x08;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x08;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
 }
@@ -93,8 +99,8 @@ void MPU_DmaInit() {
 	DMA_ITConfig(MPU6050_DMA_Channel, DMA_IT_TC, ENABLE);
 
 	NVIC_InitStructure.NVIC_IRQChannel = MPU6050_DMA_ChannelIRQn; //I2C2 connect to channel 5 of DMA1
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x05;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x05;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
 }
@@ -112,6 +118,7 @@ void Mpu::handleRawData(uint8_t* rawData) {
 	if (listener_ != nullptr) {
 		listener_->processUpdate(update);
 	}
+	data_processed = true;
 }
 
 inline void applyZeroOffset(int16_t* data, int16_t* offsets) {

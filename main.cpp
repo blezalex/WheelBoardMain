@@ -30,6 +30,7 @@
 #include "drv/esc_status/escStatusReader.hpp"
 #include "drv/settings/settings.hpp"
 #include "drv/comms/communicator.hpp"
+#include "stm32f10x_iwdg.h"
 
 extern "C" void EXTI15_10_IRQHandler(void)
 {
@@ -60,6 +61,7 @@ public:
 	void waitForAccGyroCalibration() {
 		uint16_t last_check_time = 0;
 		while(!accGyro.calibrationComplete() || angle_guard_->CanStart()) {
+			IWDG_ReloadCounter();
 			if ((uint16_t)(millis() - last_check_time) > 200u) {
 				last_check_time = millis();
 				status_led_->toggle();
@@ -72,6 +74,8 @@ private:
 	Guard* angle_guard_;
 };
 
+uint8_t scratch[255];
+
 int main(void)
 {
 	SystemInit();
@@ -80,6 +84,19 @@ int main(void)
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
 	GPIO_PinRemapConfig(GPIO_Remap_SWJ_JTAGDisable, ENABLE);
     RCC_AHBPeriphClockCmd(RCC_AHBPeriph_CRC, ENABLE);
+    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);
+    FLASH_SetLatency( FLASH_Latency_1);
+
+    RCC_LSICmd(ENABLE);
+    /* Wait till LSI is ready */
+    while (RCC_GetFlagStatus(RCC_FLAG_LSIRDY) == RESET) {}
+
+    /* Enable Watchdog*/
+    IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);
+    IWDG_SetPrescaler(IWDG_Prescaler_8); // 4, 8, 16 ... 256
+    IWDG_SetReload(0x0FFF);//This parameter must be a number between 0 and 0x0FFF.
+    IWDG_ReloadCounter();
+    IWDG_Enable();
 
 	PwmOut motor_out;
 	motor_out.init(NEUTRAL_MOTOR_CMD);
@@ -101,7 +118,10 @@ int main(void)
 		Serial1.Send((uint8_t*)msg, sizeof(msg));
 	}
 
-	// 26386
+	// TODO: Consider running imu and balacning loop outside of interrupt. Set a have_new_data flag in the interrupt, copy data to output if flag was cleared.
+	// Ignore data if flag was not cleared. Reset flag in main loop when data is copied.
+
+	// TODO 2:  while(1) must run at specific loop time for any LPFs and pids (footpad, etc to work correctly). Fix the loop time
 
 	GenericOut status_led(RCC_APB2Periph_GPIOB, GPIOB, GPIO_Pin_4, 1); // red
 	status_led.init();
@@ -112,7 +132,8 @@ int main(void)
 	InitWaiter waiter(&status_led, &imu, &angle_guard); 	// wait for angle. Wait for pads too?
 	accGyro.setListener(&waiter);
 
-	//accGyro.applyAccZeroOffsets(0, 0, 0); // TODO: Implement ACC calibration function and save values to EEPROM
+	int16_t acc_offsets[3] =  { (int16_t)cfg.callibration.acc_x, (int16_t)cfg.callibration.acc_y, (int16_t)cfg.callibration.acc_z };
+	accGyro.applyAccZeroOffsets(acc_offsets);
 	accGyro.init(MPU6050_LPF_98HZ);
 
 	waiter.waitForAccGyroCalibration();
@@ -125,7 +146,7 @@ int main(void)
 	GenericOut beeper(RCC_APB2Periph_GPIOA, GPIOA, GPIO_Pin_12, true);
 	beeper.init();
 
-	FootpadGuard foot_pad_guard(&cfg.foot_pad); // pin conflict with USART1
+	FootpadGuard foot_pad_guard(&cfg.foot_pad);  // TODO:  enable footpad guard !!!!!!!!!!!
 	Guard* guards[] = { &angle_guard /*, &foot_pad_guard */};
 	int guards_count = sizeof(guards) / sizeof(Guard*);
 
@@ -135,29 +156,37 @@ int main(void)
 
 	// 17200
 	volatile uint32_t cnt = 0;
-	char buff[50];
 
 	Communicator comms(&Serial1);
 	uint16_t last_check_time = 0;
     while(1) { // background work
-		// print debug info every 100ms
-//		if ((uint16_t)(millis() - last_check_time) > 200u) {
-//			last_check_time = millis();
-//
-//			char buff[50];
-//			int size = sprintf(buff, "%d\t%d\n", (int16_t)imu.angles[0], (int16_t)imu.angles[1]);
-//			Serial1.Send((uint8_t*)buff, size);
-//		}
+      	IWDG_ReloadCounter();
+/*
+    	// Serial port test (mirror in -> out)
+    	if (Serial1.HasData()) {
+    		int r = Serial1.Read(scratch, sizeof(scratch));
+    		Serial1.Send(scratch, r);
+    	}
+    	continue;*/
 
-//		int size = sprintf(buff, "%lu\n", cnt);
-//		if (millis() % 1000 == 0) {
-//			Serial1.Send((const uint8_t*)buff, size);
-//
-//			cnt = 0;
-//		}
-//		else {
-//			cnt++;
-//		}
+    	/*
+		// print debug info every 100ms
+		if ((uint16_t)(millis() - last_check_time) > 200u) {
+			last_check_time = millis();
+			int size = sprintf(scratch, "%d\t%d\n", (int16_t)imu.angles[0], (int16_t)imu.angles[1]);
+			Serial1.Send((uint8_t*)scratch, size);
+		}
+
+		int size = sprintf(scratch, "%lu\n", cnt);
+		if (millis() % 1000 == 0) {
+			Serial1.Send((const uint8_t*)scratch, size);
+
+			cnt = 0;
+		}
+		else {
+			cnt++;
+		}
+		*/
 
     	foot_pad_guard.Update(); // TODO: REMOVE THIS LINE !!!!!!!!!!!
 
@@ -165,34 +194,23 @@ int main(void)
     	switch (comms_msg) {
     	case RequestId_READ_CONFIG:
     	{
-    		uint8_t data[256];
-//    		uint16_t time = millis();
-    		int16_t data_len = saveProtoToBuffer(data, sizeof(data), Config_fields,  &cfg);
-//    		uint16_t diff = millis() - time;
+    		int16_t data_len = saveProtoToBuffer(scratch, sizeof(scratch), Config_fields,  &cfg);
     		if (data_len != -1) {
-    			comms.SendMsg(ReplyId_CONFIG, data, data_len);
+    			comms.SendMsg(ReplyId_CONFIG, scratch, data_len);
     		}
     		else {
     			comms.SendMsg(ReplyId_GENERIC_FAIL);
     		}
-
-//    		int size = sprintf((char*)data, "%u\n", diff);
-//    		Serial1.Send(data, size);
     		break;
     	}
 
     	case RequestId_WRITE_CONFIG:
     	{
-    		uint16_t time = millis();
-    		uint8_t data[256];
     		bool good = readSettingsFromBuffer(&cfg, comms.data(), comms.data_len());
-    		uint16_t diff = millis() - time;
     		if (good)
     			comms.SendMsg(ReplyId_GENERIC_OK);
     		else
     			comms.SendMsg(ReplyId_GENERIC_FAIL);
-//    		int size = sprintf((char*)data, "%u\n", diff);
-//    		Serial1.Send(data, size);
     		break;
     	}
     	case RequestId_GET_STATS:
@@ -202,19 +220,13 @@ int main(void)
     		stats.stear_angle = imu.angles[1];
     		stats.pad_pressure1 = foot_pad_guard.getLevel(0);
     		stats.pad_pressure2 = foot_pad_guard.getLevel(1);
-
-    		uint8_t data[256];
-//    		uint16_t time = millis();
-			int16_t data_len = saveProtoToBuffer(data, sizeof(data), Stats_fields,  &stats);
-//			uint16_t diff = millis() - time;
+			int16_t data_len = saveProtoToBuffer(scratch, sizeof(scratch), Stats_fields,  &stats);
     		if (data_len != -1) {
-    			comms.SendMsg(ReplyId_STATS, data, data_len);
+    			comms.SendMsg(ReplyId_STATS, scratch, data_len);
     		}
     		else {
     			comms.SendMsg(ReplyId_GENERIC_FAIL);
     		}
-//    		int size = sprintf((char*)data, "%u\n", diff);
-//    		Serial1.Send(data, size);
     		break;
     	}
     	case RequestId_CALLIBRATE_ACC:

@@ -5,13 +5,13 @@
 #define kHeaderSize 4 // Id + 1 byte msg len, 2 bytes padding
 #define kSuffixSize 2 // CRC
 #define kMetadataSize (kHeaderSize + kSuffixSize)
-#define kMsgTimeoutMs 100u
+#define kMsgTimeoutMs 1000u // 1 second
 
 class Communicator {
 public:
 	Communicator(Usart* comms_channel) : comms_(comms_channel) { }
 
-	void SendMsg(uint8_t msg_id, const uint8_t* data, uint8_t data_len) {
+	void SendMsg(uint8_t msg_id, const uint8_t* data, uint32_t data_len) {
 		uint8_t header[kHeaderSize];
 		header[0] = msg_id;
 		header[1] = data_len + kMetadataSize;
@@ -61,9 +61,9 @@ public:
 		}
 		last_uart_data_time_ = time;
 
-		if (buffer_pos_ != 0 && move_message_) {
+		if (move_message_) {
 			move_message_ = false;
-			int bytes_to_move  = (int)expected_msg_len() - (int)buffer_pos_;
+			int bytes_to_move = buffer_pos_ - (int)expected_msg_len();
 
 			if (bytes_to_move > 0) {
 				memmove(rx_data, rx_data + expected_msg_len(), bytes_to_move);
@@ -71,16 +71,20 @@ public:
 			buffer_pos_ = 0;
 		}
 
-    	uint16_t received_bytes = comms_->Read(rx_data + buffer_pos_, sizeof(rx_data) - buffer_pos_);
+//		char buff[30] = {0};
+//		int size = sprintf(buff, "%d\n", buffer_pos_);
+//				Serial1.Send((uint8_t*)buff, size);
+	//	comms_->Send(rx_data, 100);
+    	int32_t received_bytes = comms_->Read(rx_data + buffer_pos_, sizeof(rx_data) - buffer_pos_);
     	buffer_pos_+= received_bytes;
     	if (buffer_pos_ > kHeaderSize) {
     		if (buffer_pos_ >= sizeof(rx_data))
     			buffer_pos_ = 0; // too long/invalid
 
     		if (buffer_pos_ >= expected_msg_len()) {
-    			uint8_t msg_len = expected_msg_len() - kSuffixSize;
+    			int32_t msg_len = expected_msg_len() - kSuffixSize;
     			CRC_ResetDR();
-    			uint8_t aligned_blocks = msg_len / 4;
+    			int32_t aligned_blocks = msg_len / 4;
     			uint32_t crc32;
 				if (msg_len > 0) {
 					crc32 = CRC_CalcBlockCRC((uint32_t*)rx_data,  aligned_blocks);
@@ -100,6 +104,7 @@ public:
 				{
 					msg_id = RequestId_MSG_NONE;
 					SendMsg(ReplyId_CRC_MISMATCH);
+				//	comms_->Send(rx_data, 100);
 				}
 
     			//buffer_pos_ = 0;
@@ -120,7 +125,8 @@ public:
 	}
 
 private:
-	uint16_t buffer_pos_ = 0;
+	// buffer_pos_ always points  to non-written yet memory. bufferpos = 1 means have only one byte with index 0
+	int32_t buffer_pos_ = 0;
 
 	uint8_t expected_msg_id() {
 		return rx_data[0];

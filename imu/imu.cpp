@@ -52,7 +52,7 @@ void IMU::compute(const MpuUpdate& update) {
   int32_t sumAcc = 0;
   int16_t calibratedAccVector[3] = { update.acc[0], update.acc[1], update.acc[2] };
 
-  for (int8_t i = 0; i < 3; i++) {
+  for (int i = 0; i < 3; i++) {
       sumAcc += sq((int32_t)update.acc[i]);
   }
 

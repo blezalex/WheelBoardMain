@@ -6,8 +6,11 @@
 #include "misc.h"
 #include "arduino.h"
 
+
 #define PinSCL GPIO_Pin_10
 #define PinSDA GPIO_Pin_11
+
+// TODO: try replacing all while waits with interrupts
 
 void i2c_init() {
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_I2C2, ENABLE);
@@ -150,8 +153,8 @@ void i2c_DmaRead(uint8_t hwAddr, uint8_t rAddr, DMA_Channel_TypeDef* DMAy_Channe
 	DMA_SetCurrDataCounter(DMAy_Channelx, dataNumber);
 	DMA_Cmd(DMAy_Channelx, ENABLE);
 
-	/* While the bus is busy */
-	while(I2C_GetFlagStatus(I2C2, I2C_FLAG_BUSY));
+//	/* While the bus is busy */
+//	while(I2C_GetFlagStatus(I2C2, I2C_FLAG_BUSY));
 
 	/* Enable DMA NACK automatic generation */
 	I2C_DMALastTransferCmd(I2C2, ENABLE);					//Note this one, very important

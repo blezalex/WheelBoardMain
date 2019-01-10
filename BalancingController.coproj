@@ -6,7 +6,7 @@
       <Compile>
         <Option name="OptimizationLevel" value="2"/>
         <Option name="UseFPU" value="0"/>
-        <Option name="UserEditCompiler" value="-std=gnu++11"/>
+        <Option name="UserEditCompiler" value="-std=gnu++11;-fstack-usage"/>
         <Option name="SupportCPlusplus" value="1"/>
         <Includepaths>
           <Includepath path="."/>
@@ -24,7 +24,7 @@
         <Option name="UserEditLinkder" value=""/>
         <Option name="UseMemoryLayout" value="1"/>
         <Option name="nostartfiles" value="0"/>
-        <Option name="LTO" value="0"/>
+        <Option name="LTO" value="1"/>
         <Option name="IsNewStartupCode" value="1"/>
         <Option name="Library" value="Use base C Library"/>
         <Option name="UserEditLinker" value="--entry=main; -lstdc++; "/>
@@ -80,6 +80,7 @@
     <Component id="444" name="GPIO" path="" type="2"/>
     <Component id="445" name="EXTI" path="" type="2"/>
     <Component id="446" name="DMA" path="" type="2"/>
+    <Component id="449" name="IWDG" path="" type="2"/>
     <Component id="453" name="I2C" path="" type="2"/>
     <Component id="455" name="FLASH" path="" type="2"/>
     <Component id="456" name="TIM" path="" type="2"/>
@@ -89,31 +90,33 @@
   </Components>
   <Files>
     <File name="drv/mpu6050/mpu6050_registers.hpp" path="drv/mpu6050/mpu6050_registers.hpp" type="1"/>
-    <File name="proto/pb_decode.h" path="../nanopb-0.3.9.2-windows-x86/pb_decode.h" type="1"/>
     <File name="drv/mpu6050/mpu.cpp" path="drv/mpu6050/mpu.cpp" type="1"/>
+    <File name="proto/pb_decode.h" path="../nanopb-0.3.9.2-windows-x86/pb_decode.h" type="1"/>
     <File name="imu/imu.cpp" path="imu/imu.cpp" type="1"/>
     <File name="stm_lib/inc/stm32f10x_tim.h" path="stm_lib/inc/stm32f10x_tim.h" type="1"/>
     <File name="cmsis_boot" path="" type="2"/>
     <File name="stateTracker.hpp" path="stateTracker.hpp" type="1"/>
-    <File name="arduino.h" path="arduino.h" type="1"/>
     <File name="boardController.hpp" path="boardController.hpp" type="1"/>
-    <File name="imu/imu.hpp" path="imu/imu.hpp" type="1"/>
+    <File name="arduino.h" path="arduino.h" type="1"/>
     <File name="proto/pb_common.c" path="../nanopb-0.3.9.2-windows-x86/pb_common.c" type="1"/>
+    <File name="imu/imu.hpp" path="imu/imu.hpp" type="1"/>
     <File name="stm_lib/src/stm32f10x_tim.c" path="stm_lib/src/stm32f10x_tim.c" type="1"/>
     <File name="cmsis_boot/startup" path="" type="2"/>
     <File name="io/i2c.hpp" path="io/i2c.hpp" type="1"/>
     <File name="cmsis/core_cmFunc.h" path="cmsis/core_cmFunc.h" type="1"/>
     <File name="stm_lib/src/misc.c" path="stm_lib/src/misc.c" type="1"/>
     <File name="drv/mpu6050" path="" type="2"/>
+    <File name="stm_lib/src/stm32f10x_iwdg.c" path="stm_lib/src/stm32f10x_iwdg.c" type="1"/>
     <File name="drv/mpu6050/mpu.hpp" path="drv/mpu6050/mpu.hpp" type="1"/>
     <File name="cmsis_boot/stm32f10x.h" path="cmsis_boot/stm32f10x.h" type="1"/>
     <File name="cmsis_boot/stm32f10x_conf.h" path="cmsis_boot/stm32f10x_conf.h" type="1"/>
+    <File name="stm_lib/inc/stm32f10x_flash.h" path="stm_lib/inc/stm32f10x_flash.h" type="1"/>
     <File name="guards/guard.hpp" path="guards/guard.hpp" type="1"/>
     <File name="global.h" path="global.h" type="1"/>
-    <File name="stm_lib/inc/stm32f10x_flash.h" path="stm_lib/inc/stm32f10x_flash.h" type="1"/>
     <File name="syscalls/syscalls.c" path="syscalls/syscalls.c" type="1"/>
     <File name="stm_lib/src/stm32f10x_adc.c" path="stm_lib/src/stm32f10x_adc.c" type="1"/>
     <File name="stm_lib/inc/stm32f10x_dma.h" path="stm_lib/inc/stm32f10x_dma.h" type="1"/>
+    <File name="stm_lib/inc/stm32f10x_iwdg.h" path="stm_lib/inc/stm32f10x_iwdg.h" type="1"/>
     <File name="io/usart.hpp" path="io/usart.hpp" type="1"/>
     <File name="drv" path="" type="2"/>
     <File name="drv/settings/settings.cpp" path="drv/settings/settings.cpp" type="1"/>
@@ -133,15 +136,15 @@
     <File name="guards" path="" type="2"/>
     <File name="cmsis_boot/system_stm32f10x.c" path="cmsis_boot/system_stm32f10x.c" type="1"/>
     <File name="stm_lib/inc/misc.h" path="stm_lib/inc/misc.h" type="1"/>
-    <File name="io/usart.cpp" path="io/usart.cpp" type="1"/>
     <File name="cmsis/core_cmInstr.h" path="cmsis/core_cmInstr.h" type="1"/>
+    <File name="io/usart.cpp" path="io/usart.cpp" type="1"/>
     <File name="drv/comms/protocol.pb.h" path="drv/comms/protocol.pb.h" type="1"/>
-    <File name="balanceController.hpp" path="balanceController.hpp" type="1"/>
     <File name="drv/comms/protocol.proto" path="drv/comms/protocol.proto" type="1"/>
+    <File name="balanceController.hpp" path="balanceController.hpp" type="1"/>
     <File name="cmsis/core_cm3.h" path="cmsis/core_cm3.h" type="1"/>
     <File name="stm_lib/src/stm32f10x_exti.c" path="stm_lib/src/stm32f10x_exti.c" type="1"/>
-    <File name="stm_lib/src/stm32f10x_rcc.c" path="stm_lib/src/stm32f10x_rcc.c" type="1"/>
     <File name="proto/pb_encode.h" path="../nanopb-0.3.9.2-windows-x86/pb_encode.h" type="1"/>
+    <File name="stm_lib/src/stm32f10x_rcc.c" path="stm_lib/src/stm32f10x_rcc.c" type="1"/>
     <File name="io/i2c.cpp" path="io/i2c.cpp" type="1"/>
     <File name="drv/esc_status/escStatusReader.hpp" path="drv/esc_status/escStatusReader.hpp" type="1"/>
     <File name="drv/esc_status/escStatus.h" path="drv/esc_status/escStatus.h" type="1"/>
@@ -154,11 +157,11 @@
     <File name="stm_lib/inc/stm32f10x_exti.h" path="stm_lib/inc/stm32f10x_exti.h" type="1"/>
     <File name="stm_lib/src/stm32f10x_flash.c" path="stm_lib/src/stm32f10x_flash.c" type="1"/>
     <File name="stm_lib/inc/stm32f10x_adc.h" path="stm_lib/inc/stm32f10x_adc.h" type="1"/>
-    <File name="main.cpp" path="main.cpp" type="1"/>
     <File name="cmsis_boot/system_stm32f10x.h" path="cmsis_boot/system_stm32f10x.h" type="1"/>
-    <File name="drv/comms/communicator.hpp" path="drv/comms/communicator.hpp" type="1"/>
-    <File name="io" path="" type="2"/>
+    <File name="main.cpp" path="main.cpp" type="1"/>
     <File name="stm_lib/inc/stm32f10x_rcc.h" path="stm_lib/inc/stm32f10x_rcc.h" type="1"/>
+    <File name="io" path="" type="2"/>
+    <File name="drv/comms/communicator.hpp" path="drv/comms/communicator.hpp" type="1"/>
     <File name="stm_lib/inc/stm32f10x_i2c.h" path="stm_lib/inc/stm32f10x_i2c.h" type="1"/>
     <File name="syscalls" path="" type="2"/>
     <File name="pid.hpp" path="pid.hpp" type="1"/>

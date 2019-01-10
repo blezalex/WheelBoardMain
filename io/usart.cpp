@@ -40,8 +40,8 @@ void init(uint16_t rx_pin, uint16_t tx_pin, uint32_t baud, USART_TypeDef* usart,
 
 	NVIC_InitTypeDef NVIC_InitStructure;
 	NVIC_InitStructure.NVIC_IRQChannel = IRQ_Channel;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 15;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 15;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
 
@@ -68,7 +68,7 @@ bool Usart::Init(USART_TypeDef * device, uint32_t baud) {
 	return false;
 }
 
-int16_t Usart::Read(uint8_t* data, int16_t max_size) {
+int32_t Usart::Read(uint8_t* data, int32_t max_size) {
 	if (rxEmpty)
 		return 0;
 
@@ -97,7 +97,9 @@ void Usart::SendCurrentByteFromBuffer() {
 }
 
 // TODO: this function is not thread safe, but works OK in practice :)
-void Usart::Send(const uint8_t* data, int16_t size) {
+
+// TODO: Implement block TX, such that caller blocks is if there is no room in the buffer left and waits until all data is buffered.
+void Usart::Send(const uint8_t* data, int32_t size) {
 	// TODO: Check if buffer has enough room, if not block or error ?
 	for (int i = 0; i < size; i++) {
 		txBuffer[txBufferWriteIdx] = data[i];

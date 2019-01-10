@@ -4,56 +4,10 @@
 #include "../nanopb-0.3.9.2-windows-x86/pb_encode.h"
 #include "../nanopb-0.3.9.2-windows-x86/pb_decode.h"
 #include "stm32f10x_flash.h"
+#include "stm32f10x_iwdg.h"
 
-#define CONFIG_SIZE_MAX 1024
+#define CONFIG_SIZE_MAX 512
 #define CONFIG_FLASH_PAGE_ADDR (FLASH_BASE + 128*1024 - CONFIG_SIZE_MAX)
-
-
-struct save_state_t {
-	uint32_t data;
-	uint8_t data_size;
-	uint16_t flash_offset;
-};
-
-bool saveFn(pb_ostream_t *stream, const uint8_t *buf, size_t count) {
-	save_state_t* state = (save_state_t*)stream->state;
-
-	uint8_t* data_ptr = (uint8_t*)&state->data;
-	for (size_t i = 0; i < count; i++) {
-		*(data_ptr + state->data_size++) = *(buf++);
-
-		if (state->data_size == 4) {
-			FLASH_ProgramWord((uint32_t)CONFIG_FLASH_PAGE_ADDR + state->flash_offset, state->data);
-			state->data_size = 0;
-			state->data = 0;
-			state->flash_offset += 4;
-		}
-	}
-	return true;
-}
-
-bool saveSettingsToFlash(const Config& config) {
-	pb_ostream_t sizestream = { 0 };
-	pb_encode(&sizestream, Config_fields, &config);
-
-	FLASH_Unlock();
-	FLASH_ErasePage(CONFIG_FLASH_PAGE_ADDR);
-
-	save_state_t save_state = { 0, 0, 4 };
-	pb_ostream_t save_stream = { &saveFn, &save_state, CONFIG_SIZE_MAX, 0 };
-
-	uint32_t size = sizestream.bytes_written;
-	FLASH_ProgramWord((uint32_t)CONFIG_FLASH_PAGE_ADDR, size);
-	if (pb_encode(&save_stream, Config_fields, &config)) {
-		if (save_state.data_size > 0) {
-			// save last block (incomplete block)
-			FLASH_ProgramWord((uint32_t)CONFIG_FLASH_PAGE_ADDR + save_state.flash_offset, save_state.data);
-		}
-	}
-
-	FLASH_Lock();
-	return true;
-}
 
 bool saveToBufferFn(pb_ostream_t *stream, const uint8_t *buf, size_t count) {
 	uint8_t** out = (uint8_t**)stream->state;
@@ -64,7 +18,7 @@ bool saveToBufferFn(pb_ostream_t *stream, const uint8_t *buf, size_t count) {
 	return true;
 }
 
-int16_t saveProtoToBuffer(uint8_t* buffer, int16_t max_size, const pb_field_t fields[], const void *src_struct) {
+int32_t saveProtoToBuffer(uint8_t* buffer, int16_t max_size, const pb_field_t fields[], const void *src_struct) {
 	pb_ostream_t sizestream = { 0 };
 	pb_encode(&sizestream, fields, src_struct);
 
@@ -77,6 +31,39 @@ int16_t saveProtoToBuffer(uint8_t* buffer, int16_t max_size, const pb_field_t fi
 
 	return sizestream.bytes_written;
 }
+
+bool saveSettingsToFlash(const Config& config) {
+	uint8_t buffer[256];
+	int32_t size = saveProtoToBuffer(buffer, sizeof(buffer), Config_fields, &config);
+	if (size == -1)
+		return false;
+
+	FLASH_Unlock();
+	if (FLASH_ErasePage(CONFIG_FLASH_PAGE_ADDR) != FLASH_Status::FLASH_COMPLETE)
+		return false;
+
+	for (int w  = 0; w < 1000; w++) { // Waste some time. Flash writes lock up the bus and can cause MCU to miss interrupt and lock up
+		IWDG_ReloadCounter();
+	}
+
+	if (FLASH_ProgramWord((uint32_t)CONFIG_FLASH_PAGE_ADDR, size) != FLASH_Status::FLASH_COMPLETE)
+		return false;
+
+	int size_round_up = (size + 3) / 4 * 4;
+	for (int i = 0; i < size_round_up/ 4; i++) {
+		// +4 for size block
+		if (FLASH_ProgramWord((uint32_t)CONFIG_FLASH_PAGE_ADDR + i*4 + 4, ((uint32_t*)buffer)[i]) != FLASH_Status::FLASH_COMPLETE)
+			return false;
+		// Waste some time.
+		for (int w  = 0; w < 1000; w++) {
+			IWDG_ReloadCounter();
+		}
+	}
+
+	FLASH_Lock();
+	return true;
+}
+
 
 bool read_fn(pb_istream_t *stream, uint8_t *buf, size_t count) {
 	uint32_t* read_offset = (uint32_t*)stream->state;
