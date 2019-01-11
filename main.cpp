@@ -151,8 +151,8 @@ int main(void)
 	GenericOut beeper(RCC_APB2Periph_GPIOA, GPIOA, GPIO_Pin_12, true);
 	beeper.init();
 
-	FootpadGuard foot_pad_guard(&cfg.foot_pad);  // TODO:  enable footpad guard !!!!!!!!!!!
-	Guard* guards[] = { &angle_guard /*, &foot_pad_guard */};
+	FootpadGuard foot_pad_guard(&cfg.foot_pad);
+	Guard* guards[] = { &angle_guard, &foot_pad_guard };
 	int guards_count = sizeof(guards) / sizeof(Guard*);
 
 	BoardController main_ctrl(&cfg, imu, motor_out, status_led, beeper, guards, guards_count, green_led);
@@ -192,8 +192,6 @@ int main(void)
 			cnt++;
 		}
 		*/
-
-    	foot_pad_guard.Update(); // TODO: REMOVE THIS LINE !!!!!!!!!!!
 
     	uint8_t comms_msg = comms.update();
     	switch (comms_msg) {
