@@ -18,24 +18,35 @@ bool saveToBufferFn(pb_ostream_t *stream, const uint8_t *buf, size_t count) {
 	return true;
 }
 
-int32_t saveProtoToBuffer(uint8_t* buffer, int16_t max_size, const pb_field_t fields[], const void *src_struct) {
+int32_t saveProtoToBuffer(uint8_t* buffer, int16_t max_size, const pb_field_t fields[], const void *src_struct,  Usart* log ) {
 	pb_ostream_t sizestream = { 0 };
 	pb_encode(&sizestream, fields, src_struct);
 
-	if (sizestream.bytes_written > max_size)
-		return -1;
+	if (sizestream.bytes_written > max_size) {
+		return -sizestream.bytes_written;
+	}
+
 
 	pb_ostream_t save_stream = { &saveToBufferFn, &buffer, max_size, 0 };
-	if (!pb_encode(&save_stream, fields, src_struct))
+	if (!pb_encode(&save_stream, fields, src_struct)) {
+		if (log != nullptr)
+		{
+			log->Send(save_stream.errmsg, strlen(save_stream.errmsg));
+
+		}
 		return -1;
+	}
+
+
+
 
 	return sizestream.bytes_written;
 }
 
 bool saveSettingsToFlash(const Config& config) {
-	uint8_t buffer[256];
+	uint8_t buffer[255];
 	int32_t size = saveProtoToBuffer(buffer, sizeof(buffer), Config_fields, &config);
-	if (size == -1)
+	if (size < 0)
 		return false;
 
 	FLASH_Unlock();

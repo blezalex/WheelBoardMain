@@ -71,6 +71,20 @@ FootpadGuard::FootpadGuard(const Config_FootPadSettings* settings)
 bool FootpadGuard::CanStart() {
 	return padLevelFilter[0].getVal() > settings_->min_level_to_start && padLevelFilter[1].getVal() > settings_->min_level_to_start;
 }
+
+// Stop if one of the foopads below the threshold for at least shutoff_delay_ms
 bool FootpadGuard::MustStop() {
-	return padLevelFilter[0].getVal() < settings_->min_level_to_continue || padLevelFilter[1].getVal() < settings_->min_level_to_continue;
+	bool stop_condition = padLevelFilter[0].getVal() < settings_->min_level_to_continue || padLevelFilter[1].getVal() < settings_->min_level_to_continue;
+
+	if (!stop_condition) {
+		stop_requested_ = false;
+		return false;
+	}
+
+	if (!stop_requested_) {
+		stop_requested_ = true;
+		stop_request_timestamp_ = millis();
+	}
+
+	return (uint16_t)(millis() - stop_request_timestamp_) > settings_->shutoff_delay_ms;
 }

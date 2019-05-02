@@ -14,14 +14,14 @@ inline float applyExpoReal(float x, float k) { return sgn(x) * powf(fabs(x), k);
 class BalanceController  {
 public:
 	BalanceController(const Config* settings, const IMU& imu) :
-		settings_(settings), imu_(imu), balance_pid_(&settings->balance_pid) {
+		settings_(settings), imu_(imu), d_lpf_(&settings->balance_settings.balance_d_param_lpf_rc), balance_pid_(&settings->balance_pid) {
 		reset();
 	}
 
 	void reset() {
 		balance_pid_.reset();
+		d_lpf_.reset();
 		max_D_multiplier_so_far_ = 0;
-		prev_gyro_update_ = 0;
 	}
 
 	float getPInput() {
@@ -32,8 +32,8 @@ public:
 	// Returns torque request based on current imu and gyro readings. Expected range is -MOTOR_CMD_RANGE:MOTOR_CMD_RANGE,
 	// but not limited here to that range.
 	int16_t compute(const int16_t* gyro_update) {
-		int32_t avg_gyro_upd = (gyro_update[ANGLE_DRIVE] + prev_gyro_update_) / 2; // ESC refresh rate is 300 hz, controller is 1000hz. Avg last 2 readings to get closer to ctrl refresh rate
-		prev_gyro_update_ = gyro_update[ANGLE_DRIVE];
+		int32_t avg_gyro_upd = constrain(gyro_update[ANGLE_DRIVE], -settings_->balance_settings.balance_d_param_limiter, settings_->balance_settings.balance_d_param_limiter);
+		avg_gyro_upd = (int32_t) d_lpf_.compute(avg_gyro_upd);
 		return balance_pid_.compute(getPInput(), avg_gyro_upd);
 	}
 
@@ -55,7 +55,7 @@ public:
 private:
 	const Config* settings_;
 	const IMU& imu_;
-	int16_t prev_gyro_update_ = 0;
 	float max_D_multiplier_so_far_ = 0;
+	LPF d_lpf_;
 	PidController balance_pid_;
 };
