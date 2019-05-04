@@ -34,11 +34,13 @@
 
 extern "C" void EXTI15_10_IRQHandler(void)
 {
+//	GPIOA->BSRR = GPIO_Pin_11;
 	if (EXTI_GetITStatus(MPU6050_INT_Exti))			//MPU6050_INT
 	{
 		EXTI_ClearITPendingBit(MPU6050_INT_Exti);
 		mpuHandleDataReady();
 	}
+//	GPIOA->BRR = GPIO_Pin_11;
 }
 
 
@@ -82,7 +84,7 @@ void applyCalibrationConfig(const Config& cfg, Mpu* accGyro) {
 }
 
 int main(void)
-{
+ {
 	SystemInit();
 
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
@@ -150,6 +152,9 @@ int main(void)
 
 	GenericOut beeper(RCC_APB2Periph_GPIOA, GPIOA, GPIO_Pin_12, true);
 	beeper.init();
+
+	// GenericOut debug(RCC_APB2Periph_GPIOA, GPIOA, GPIO_Pin_11, false);
+	// debug.init();
 
 	FootpadGuard foot_pad_guard(&cfg.foot_pad);
 	Guard* guards[] = { &angle_guard, &foot_pad_guard };

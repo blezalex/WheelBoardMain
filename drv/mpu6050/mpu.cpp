@@ -193,7 +193,8 @@ void Mpu::handleGyroData(int16_t* gyro,  uint8_t* rawData) {
 
 extern "C" void DMA1_Channel5_IRQHandler(void)
 {
-	if (DMA_GetFlagStatus(MPU6050_DMA_TC_FLAG))
+	//GPIOA->BSRR = GPIO_Pin_11;
+	if (DMA_GetFlagStatus(MPU6050_DMA_TC_FLAG)) // 172us
 	{
 		DMA_ClearFlag(MPU6050_DMA_TC_FLAG);
 
@@ -205,6 +206,7 @@ extern "C" void DMA1_Channel5_IRQHandler(void)
 
 		accGyro.handleRawData(MPU6050_Rx_Buffer);
 	}
+	//GPIOA->BRR = GPIO_Pin_11;
 }
 
 void Mpu::init(uint8_t lpfSettings) {

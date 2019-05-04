@@ -146,8 +146,10 @@ void i2c_writeReg(uint8_t hwAddr, uint8_t wAddr, uint8_t value) {
 	stop();
 }
 
-void i2c_DmaRead(uint8_t hwAddr, uint8_t rAddr, DMA_Channel_TypeDef* DMAy_Channelx, uint16_t dataNumber)
+void i2c_DmaRead(uint8_t hwAddr, uint8_t rAddr, DMA_Channel_TypeDef* DMAy_Channelx, uint16_t dataNumber) // 72 us
 {
+	// GPIOA->BSRR = GPIO_Pin_11;
+
 	DMA_Cmd(DMAy_Channelx, DISABLE);
 	/* Set current data number again to 14 for MPu6050, only possible after disabling the DMA channel */
 	DMA_SetCurrDataCounter(DMAy_Channelx, dataNumber);
@@ -168,6 +170,8 @@ void i2c_DmaRead(uint8_t hwAddr, uint8_t rAddr, DMA_Channel_TypeDef* DMAy_Channe
 
 	/* Start DMA to receive data from I2C */
 	I2C_DMACmd(I2C2, ENABLE);
+
+	//GPIOA->BRR = GPIO_Pin_11;
 
 	// When the data transmission is complete, it will automatically jump to DMA interrupt routine to finish the rest.
 }

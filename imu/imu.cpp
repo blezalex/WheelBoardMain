@@ -13,7 +13,7 @@
 #define compFilterAccWeight 0.00167
 #define compFilterAccWeightCalib 0.01
 
-void RotateVector(float vector[], float roll, float pitch, float yaw)
+static void RotateVector(float vector[], float roll, float pitch, float yaw)
 {
     float cosR = fcos(roll);
     float sinR = fsin(roll);
@@ -46,12 +46,9 @@ void IMU::updateGravityVector(const MpuUpdate& update) {
 
 void IMU::compute(const MpuUpdate& update) {
   float scale =  1000 * GYRO_SCALE; // TODO: use actual time
-
   RotateVector(accCompensatedVector_, update.gyro[0] * scale, update.gyro[1] * scale, update.gyro[2] * scale);
 
   int32_t sumAcc = 0;
-  int16_t calibratedAccVector[3] = { update.acc[0], update.acc[1], update.acc[2] };
-
   for (int i = 0; i < 3; i++) {
       sumAcc += sq((int32_t)update.acc[i]);
   }
@@ -60,7 +57,7 @@ void IMU::compute(const MpuUpdate& update) {
 
   if (currentGByAcc > 0.85 && currentGByAcc < 1.15) {
       for (int i = 0; i < 3; i++) {
-          accCompensatedVector_[i] = (1 - compFilterAccWeight) * accCompensatedVector_[i] + compFilterAccWeight * calibratedAccVector[i];
+          accCompensatedVector_[i] = (1 - compFilterAccWeight) * accCompensatedVector_[i] + compFilterAccWeight * update.acc[i];
       }                        
   }
 

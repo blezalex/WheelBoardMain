@@ -18,7 +18,7 @@
  
 
 /*----------Stack Configuration-----------------------------------------------*/  
-#define STACK_SIZE       0x00000100      /*!< The Stack size suggest using even number     */
+#define STACK_SIZE       0x00000500      /*!< The Stack size suggest using even number     */
 __attribute__ ((section(".co_stack")))
 unsigned long pulStack[STACK_SIZE];      
 
@@ -273,7 +273,7 @@ void Default_Reset_Handler(void)
 #pragma weak RTCAlarm_IRQHandler = Default_Handler
 #pragma weak USBWakeUp_IRQHandler = Default_Handler
 
-
+#include "stm32f10x_gpio.h"
 /**
   * @brief  This is the code that gets called when the processor receives an 
   *         unexpected interrupt.  This simply enters an infinite loop, 
@@ -286,6 +286,8 @@ static void Default_Handler(void)
   /* Go into an infinite loop. */
   while (1) 
   {
+    GPIOA->BSRR = GPIO_Pin_11;
+    GPIOA->BRR = GPIO_Pin_11;
   }
 }
 

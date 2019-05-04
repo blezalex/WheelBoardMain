@@ -52,6 +52,12 @@ void init(uint16_t rx_pin, uint16_t tx_pin, uint32_t baud, USART_TypeDef* usart,
 bool Usart::Init(USART_TypeDef * device, uint32_t baud) {
 	device_  = device;
 	rxEmpty = true;
+	rxBufferReadIdx = 0;
+	rxBufferWriteIdx = 0;
+
+	txBufferReadIdx = 0;
+	txBufferWriteIdx = 0;
+	txStarted = false;
 
 	if (device_ == USART1) {
 		RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
@@ -127,7 +133,6 @@ void Usart::handleIRQ(){
 		 USART_ITConfig(device_, USART_IT_TXE, DISABLE);
 		 txStarted = 0;
 	 }
-	 return;
 	}
 	if(USART_GetITStatus(device_, USART_IT_RXNE) != RESET) {
 		rxBuffer[rxBufferWriteIdx++] = USART_ReceiveData(device_);
@@ -135,12 +140,10 @@ void Usart::handleIRQ(){
 		if (rxBufferWriteIdx >= RX_BUFFER_SIZE) {
 			rxBufferWriteIdx = 0;
 		}
-		return;
 	}
 	if(USART_GetITStatus(device_, USART_IT_ORE) != RESET) {
 		device_->SR;
 		USART_ReceiveData(device_);
-		return;
 	}
 }
 
