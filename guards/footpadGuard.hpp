@@ -22,6 +22,8 @@ private:
 	LPF padLevelFilter[2];
 
 	const Config_FootPadSettings* settings_;
+	uint16_t stop_request_timestamp_ = 0;
+	bool stop_requested_ = false;
 
 	DISALLOW_COPY_AND_ASSIGN(FootpadGuard);
 };

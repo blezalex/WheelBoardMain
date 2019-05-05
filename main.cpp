@@ -76,7 +76,7 @@ private:
 	Guard* angle_guard_;
 };
 
-uint8_t scratch[255];
+uint8_t scratch[256];
 
 void applyCalibrationConfig(const Config& cfg, Mpu* accGyro) {
 	int16_t acc_offsets[3] =  { (int16_t)cfg.callibration.acc_x, (int16_t)cfg.callibration.acc_y, (int16_t)cfg.callibration.acc_z };
@@ -136,12 +136,10 @@ int main(void)
 	status_led.setState(0);
 
 	IMU imu;
-	AngleGuard angle_guard(imu);
+	AngleGuard angle_guard(imu, &cfg.balance_settings);
 	InitWaiter waiter(&status_led, &imu, &angle_guard); 	// wait for angle. Wait for pads too?
 	accGyro.setListener(&waiter);
-
-
-	accGyro.init(MPU6050_LPF_98HZ);
+	accGyro.init(cfg.balance_settings.global_gyro_lpf);
 
 	waiter.waitForAccGyroCalibration();
 
@@ -202,8 +200,8 @@ int main(void)
     	switch (comms_msg) {
     	case RequestId_READ_CONFIG:
     	{
-    		int16_t data_len = saveProtoToBuffer(scratch, sizeof(scratch), Config_fields,  &cfg);
-    		if (data_len != -1) {
+    		int16_t data_len = saveProtoToBuffer(scratch, sizeof(scratch), Config_fields,  &cfg, &Serial1);
+    		if (data_len > 0) {
     			comms.SendMsg(ReplyId_CONFIG, scratch, data_len);
     		}
     		else {

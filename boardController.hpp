@@ -22,12 +22,15 @@ public:
 		avg_running_motor_out_(&settings->misc.beep_rc),
 		min_motor_out_(MIN_MOTOR_CMD),
 		max_motor_out_(MAX_MOTOR_CMD),
-		green_led_(green_led){
+		green_led_(green_led),
+		motor_out_lpf_(&settings->balance_settings.output_lpf_rc){
 	}
 
 	uint16_t mapOutToPwm(int32_t balancer_out) {
 		uint16_t out = constrain(balancer_out + NEUTRAL_MOTOR_CMD, min_motor_out_, max_motor_out_);
-		uint16_t new_out = constrain(out, prev_out_ - MAX_CHANGE_SINGLE_LOOP, prev_out_ + MAX_CHANGE_SINGLE_LOOP);
+		uint16_t max_update = settings_->balance_settings.max_update_limiter;
+		uint16_t new_out = constrain(out, prev_out_ - max_update, prev_out_ + max_update);
+		new_out = (uint16_t)motor_out_lpf_.compute(new_out);
 
 		prev_out_ = new_out;
 		return new_out;
@@ -78,4 +81,5 @@ private:
 	uint16_t min_motor_out_;
 	uint16_t max_motor_out_;
 	GenericOut& green_led_;
+	LPF motor_out_lpf_;
 };

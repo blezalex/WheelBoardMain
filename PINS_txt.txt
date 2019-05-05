@@ -1,0 +1,5 @@
+https://www.readytoflyquads.com/the-flip32
+
+RC1,RC2 - FOOT PAD2
+PWM1 - motor out
+RT - bluetooth RX, TX
