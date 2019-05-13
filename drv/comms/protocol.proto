@@ -37,19 +37,19 @@ message Config {
   optional Callibration callibration = 1;
   
   message PidConfig {
-    required float p = 1 [default = 2200 ];
+    required float p = 1 [default = 1200 ];
     required float d = 2 [default = 0.65 ];
-    required float i = 3 [default = 0.9 ];
-    required float max_i = 4 [default = 500 ];
+    required float i = 3 [default = 0.2 ];
+    required float max_i = 4 [default = 2500 ];
   }
 
   required PidConfig balance_pid = 2;
 
   message FootPadSettings {
-    required float filter_rc = 1 [default= 0.03];
+    required float filter_rc = 1 [default= 0.05];
     required int32 min_level_to_start = 2 [default = 3300];
     required int32 min_level_to_continue = 3 [default = 2000];
-    required int32 shutoff_delay_ms = 4 [default = 0];
+    required int32 shutoff_delay_ms = 4 [default = 100];
   }
 
   required FootPadSettings foot_pad = 3;
@@ -59,7 +59,7 @@ message Config {
 	required float balance_expo = 1 [default = 1.4 ];
 	
 	// scale input angel in deg by deviding by 'balance_angle_scaling'
-	required float balance_angle_scaling = 2 [default = 10];
+	required float balance_angle_scaling = 2 [default = 12];
 	
 	required int32 max_start_angle_steer = 3 [default = 15];
 	required int32 shutoff_angle_steer = 4 [default = 40];

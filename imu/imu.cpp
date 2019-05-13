@@ -10,8 +10,8 @@
 
 #define GYRO_SCALE (4 / 16.4 * PI / 180.0 / 1000000.0)   //MPU6050 and MPU3050   16.4 LSB/(deg/s) and we ignore the last 2 bits
 
-#define compFilterAccWeight 0.00167
-#define compFilterAccWeightCalib 0.01
+#define compFilterAccWeight 0.0002
+#define compFilterAccWeightCalib 0.005
 
 static void RotateVector(float vector[], float roll, float pitch, float yaw)
 {
@@ -38,9 +38,8 @@ static void RotateVector(float vector[], float roll, float pitch, float yaw)
 // IMU::compute updates gravity vector with highly filtered ACC values. It takes a lot of time for ACC values to propagate on startup
 // This method is using much higher update rate
 void IMU::updateGravityVector(const MpuUpdate& update) {
-  int16_t calibratedAccVector[3] = { update.acc[0], update.acc[1], update.acc[2] };
   for (int i = 0; i < 3; i++) {
-	  accCompensatedVector_[i] = (1 - compFilterAccWeightCalib) * accCompensatedVector_[i] + compFilterAccWeightCalib * calibratedAccVector[i];
+	  accCompensatedVector_[i] = (1 - compFilterAccWeightCalib) * accCompensatedVector_[i] + compFilterAccWeightCalib * update.acc[i];
   }
 }
 
@@ -55,7 +54,7 @@ void IMU::compute(const MpuUpdate& update) {
 
   float currentGByAcc = sqrt(sumAcc) / ACC_1G;
 
-  if (currentGByAcc > 0.85 && currentGByAcc < 1.15) {
+  if (currentGByAcc > 0.8 && currentGByAcc < 1.2) {
       for (int i = 0; i < 3; i++) {
           accCompensatedVector_[i] = (1 - compFilterAccWeight) * accCompensatedVector_[i] + compFilterAccWeight * update.acc[i];
       }                        
