@@ -16,6 +16,7 @@ enum RequestId {
   GET_STATS = 3;
   CALLIBRATE_ACC = 4;
   SAVE_CONFIG = 5;
+  GET_DEBUG_BUFFER = 6;
 }
 
 enum ReplyId {
@@ -25,6 +26,7 @@ enum ReplyId {
   STATS = 3;
   CONFIG = 4;
   CRC_MISMATCH = 5;
+  DEBUG_BUFFER = 6;
 }
 
 message Config {
@@ -69,7 +71,15 @@ message Config {
 	required float output_lpf_rc = 7 [default=1];
 
 	required int32 balance_d_param_limiter = 8 [ default = 300 ];
-	required float balance_d_param_lpf_rc = 9 [ default = 0.5 ];
+	
+	// 100hz = 0.385
+	// 50hz = 0.24
+	// 40hz = 0.20
+	// 30hz = 0.158
+	// 20hz = 0.11
+	// 10hz = 0.06
+	// 1hz  = 0.006
+	required float balance_d_param_lpf_rc = 9 [ default = 0.15 ];
 	
 	// MPU6050_LPF_256HZ 0, MPU6050_LPF_188HZ 1, MPU6050_LPF_98HZ 2, MPU6050_LPF_42HZ 3, MPU6050_LPF_20HZ 4, MPU6050_LPF_10HZ 5, MPU6050_LPF_5HZ  6
 	// Reboot required to change

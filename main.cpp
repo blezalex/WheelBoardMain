@@ -5,6 +5,7 @@
 #include "stm32f10x_dma.h"
 #include "stm32f10x_exti.h"
 #include "stm32f10x_flash.h"
+#include "stm32f10x_iwdg.h"
 #include "misc.h"
 
 #include <math.h>
@@ -27,10 +28,9 @@
 #include "balanceController.hpp"
 #include "boardController.hpp"
 #include "stm32f10x_adc.h"
-#include "drv/esc_status/escStatusReader.hpp"
 #include "drv/settings/settings.hpp"
 #include "drv/comms/communicator.hpp"
-#include "stm32f10x_iwdg.h"
+
 
 extern "C" void EXTI15_10_IRQHandler(void)
 {
@@ -76,7 +76,11 @@ private:
 	Guard* angle_guard_;
 };
 
-uint8_t scratch[256];
+static uint8_t scratch[256];
+
+uint8_t write_pos = 0;
+uint8_t read_pos = 0;
+static uint8_t debug[200];
 
 void applyCalibrationConfig(const Config& cfg, Mpu* accGyro) {
 	int16_t acc_offsets[3] =  { (int16_t)cfg.callibration.acc_x, (int16_t)cfg.callibration.acc_y, (int16_t)cfg.callibration.acc_z };
@@ -167,6 +171,9 @@ int main(void)
 
 	Communicator comms(&Serial1);
 	uint16_t last_check_time = 0;
+
+	write_pos = 0;
+	read_pos = 0;
     while(1) { // background work
       	IWDG_ReloadCounter();
 /*
@@ -196,6 +203,15 @@ int main(void)
 		}
 		*/
 
+		if ((uint16_t)(millis() - last_check_time) > 100u) {
+			last_check_time = millis();
+			int16_t out = (motor_out.get() - 1500) / 4;
+		//	debug[write_pos++] = (int8_t)imu.angles[0];
+			debug[write_pos++] = out;
+			if (write_pos >= sizeof(debug))
+				write_pos = 0;
+		}
+
     	uint8_t comms_msg = comms.update();
     	switch (comms_msg) {
     	case RequestId_READ_CONFIG:
@@ -209,6 +225,26 @@ int main(void)
     		}
     		break;
     	}
+
+    	case RequestId_GET_DEBUG_BUFFER:
+    	{
+    		// TODO: make sure it all fits in TX buffer or an overrun will occur
+    		if (write_pos < read_pos) {
+         		int data_len_tail = sizeof(debug) - read_pos;
+				if (data_len_tail > 0) {
+					comms.SendMsg(ReplyId_DEBUG_BUFFER, debug + read_pos, data_len_tail);
+					read_pos = 0;
+				}
+    		}
+
+    		int rem_len =  write_pos - read_pos;
+    		if (rem_len > 0) {
+    			comms.SendMsg(ReplyId_DEBUG_BUFFER, debug + read_pos , rem_len);
+    			read_pos = write_pos;
+    		}
+    		break;
+    	}
+
 
     	case RequestId_WRITE_CONFIG:
     	{

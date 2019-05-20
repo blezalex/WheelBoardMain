@@ -48,8 +48,9 @@ private:
 		uint16_t durationSinceStart = millis() - start_timestamp_;
 		if (durationSinceStart > START_DURATION) {
 			state_ = State::Running;
+			start_progress_ = 1;
 		}
-		start_progress_ = min(durationSinceStart / (float)START_DURATION, 1);
+		start_progress_ = durationSinceStart / (float)START_DURATION;
 	}
 
 	void handleFirstInterationState() {

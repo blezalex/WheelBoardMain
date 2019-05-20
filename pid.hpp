@@ -10,16 +10,11 @@ public:
 	    reset();
 	}
 
-	float compute(float error) {
-		return compute(error, error - _prevError);
-	}
-
-	float compute(float error, float de) {
+	float compute(float error, float de, float ierror) {
+		_sumI = constrain(_sumI + ierror, -_params->max_i, _params->max_i);
 		float out = error * _params->p + de * _params->d + _sumI * _params->i;
 
 		_prevError = error;
-		_sumI = constrain(_sumI + error, -_params->max_i, _params->max_i);
-
 		return out;
 	}
 
