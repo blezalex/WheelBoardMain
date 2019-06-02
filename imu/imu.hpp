@@ -5,17 +5,33 @@
 #include "Arduino.h"
 #include "global.h"
 #include "drv/mpu6050/mpu.hpp"
+#include "MadgwickAHRS.hpp"
+#include "drv/comms/protocol.pb.h"
+
+#define MADGWICK
 
 class IMU {
 public:
-	IMU()
-	: accCompensatedVector_{ 0, 0, ACC_1G } {}
-	void compute(const MpuUpdate& update);
-	void updateGravityVector(const MpuUpdate& update);
+	IMU(const Config_BalancingConfig* config)
+#ifndef MADGWICK
+	: accCompensatedVector_{ 0, 0, ACC_1G }, config_(config) {
+#else
+		:mw_(&config_->imu_beta), config_(config) {
+		mw_.begin(1000);
+#endif
+	}
+	void compute(const MpuUpdate& update, bool init = false);
+
 	volatile float angles[2];
 private:
-	float accCompensatedVector_[3];
 
+#ifdef MADGWICK
+	Madgwick mw_;
+#else
+	float accCompensatedVector_[3];
+#endif
+
+	const Config_BalancingConfig* config_;
 	DISALLOW_COPY_AND_ASSIGN(IMU);
 };
 

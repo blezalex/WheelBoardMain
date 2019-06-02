@@ -52,7 +52,7 @@ public:
 
 	void processUpdate(const MpuUpdate& update) {
 		if (!accGyro.calibrationComplete()) {
-			imu_->updateGravityVector(update);
+			imu_->compute(update, true);
 		}
 		else {
 			imu_->compute(update);
@@ -139,7 +139,7 @@ int main(void)
 	status_led.init();
 	status_led.setState(0);
 
-	IMU imu;
+	IMU imu(&cfg.balance_settings);
 	AngleGuard angle_guard(imu, &cfg.balance_settings);
 	InitWaiter waiter(&status_led, &imu, &angle_guard); 	// wait for angle. Wait for pads too?
 	accGyro.setListener(&waiter);
@@ -206,8 +206,8 @@ int main(void)
 		if ((uint16_t)(millis() - last_check_time) > 100u) {
 			last_check_time = millis();
 			int16_t out = (motor_out.get() - 1500) / 4;
-		//	debug[write_pos++] = (int8_t)imu.angles[0];
-			debug[write_pos++] = out;
+			debug[write_pos++] = (int8_t)imu.angles[ANGLE_DRIVE];
+		//	debug[write_pos++] = out;
 			if (write_pos >= sizeof(debug))
 				write_pos = 0;
 		}

@@ -95,6 +95,7 @@
     <File name="stm_lib/inc/stm32f10x_tim.h" path="stm_lib/inc/stm32f10x_tim.h" type="1"/>
     <File name="imu/imu.cpp" path="imu/imu.cpp" type="1"/>
     <File name="cmsis_boot" path="" type="2"/>
+    <File name="imu/MadgwickAHRS.hpp" path="imu/MadgwickAHRS.hpp" type="1"/>
     <File name="stateTracker.hpp" path="stateTracker.hpp" type="1"/>
     <File name="boardController.hpp" path="boardController.hpp" type="1"/>
     <File name="arduino.h" path="arduino.h" type="1"/>
@@ -110,9 +111,9 @@
     <File name="cmsis_boot/stm32f10x.h" path="cmsis_boot/stm32f10x.h" type="1"/>
     <File name="drv/mpu6050/mpu.hpp" path="drv/mpu6050/mpu.hpp" type="1"/>
     <File name="cmsis_boot/stm32f10x_conf.h" path="cmsis_boot/stm32f10x_conf.h" type="1"/>
-    <File name="guards/guard.hpp" path="guards/guard.hpp" type="1"/>
     <File name="stm_lib/inc/stm32f10x_flash.h" path="stm_lib/inc/stm32f10x_flash.h" type="1"/>
     <File name="global.h" path="global.h" type="1"/>
+    <File name="guards/guard.hpp" path="guards/guard.hpp" type="1"/>
     <File name="syscalls/syscalls.c" path="syscalls/syscalls.c" type="1"/>
     <File name="stm_lib/inc/stm32f10x_dma.h" path="stm_lib/inc/stm32f10x_dma.h" type="1"/>
     <File name="stm_lib/src/stm32f10x_adc.c" path="stm_lib/src/stm32f10x_adc.c" type="1"/>
@@ -132,11 +133,12 @@
     <File name="drv/settings" path="" type="2"/>
     <File name="io/genericOut.hpp" path="io/genericOut.hpp" type="1"/>
     <File name="proto/pb_common.h" path="../nanopb-0.3.9.2-windows-x86/pb_common.h" type="1"/>
+    <File name="imu/MadgwickAHRS.cpp" path="imu/MadgwickAHRS.cpp" type="1"/>
     <File name="cmsis_boot/system_stm32f10x.c" path="cmsis_boot/system_stm32f10x.c" type="1"/>
     <File name="guards" path="" type="2"/>
     <File name="stm_lib/inc/misc.h" path="stm_lib/inc/misc.h" type="1"/>
-    <File name="io/usart.cpp" path="io/usart.cpp" type="1"/>
     <File name="cmsis/core_cmInstr.h" path="cmsis/core_cmInstr.h" type="1"/>
+    <File name="io/usart.cpp" path="io/usart.cpp" type="1"/>
     <File name="drv/comms/protocol.pb.h" path="drv/comms/protocol.pb.h" type="1"/>
     <File name="balanceController.hpp" path="balanceController.hpp" type="1"/>
     <File name="drv/comms/protocol.proto" path="drv/comms/protocol.proto" type="1"/>

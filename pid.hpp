@@ -11,21 +11,18 @@ public:
 	}
 
 	float compute(float error, float de, float ierror) {
-		_sumI = constrain(_sumI + ierror, -_params->max_i, _params->max_i);
-		float out = error * _params->p + de * _params->d + _sumI * _params->i;
+		ierror =  constrain(ierror, -_params->max_i, _params->max_i);
+		_sumI = constrain(_sumI +  ierror * _params->i, -MOTOR_CMD_RANGE, MOTOR_CMD_RANGE);
 
-		_prevError = error;
-		return out;
+		return  error * _params->p + de * _params->d + _sumI;;
 	}
 
 	void reset() {
 		_sumI = 0;
-		_prevError = 0;
 	}
 
 private:
 	const Config_PidConfig* _params;
-	float _prevError;
 	float _sumI;
 
 	DISALLOW_COPY_AND_ASSIGN(PidController);

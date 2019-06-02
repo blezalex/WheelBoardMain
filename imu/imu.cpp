@@ -1,6 +1,7 @@
 #include <math.h>
 #include "imu.hpp"
 
+
 #define sq(v) ((v)*(v))
 #define PI 3.141593
 
@@ -10,8 +11,21 @@
 
 #define GYRO_SCALE (4 / 16.4 * PI / 180.0 / 1000000.0)   //MPU6050 and MPU3050   16.4 LSB/(deg/s) and we ignore the last 2 bits
 
-#define compFilterAccWeight 0.0002
+#define compFilterAccWeight 0.0004
 #define compFilterAccWeightCalib 0.005
+#define GRAVITY_TOLERANCE 0.15
+
+#ifdef MADGWICK
+
+
+void IMU::compute(const MpuUpdate& update, bool init) {
+	const float MW_GYRO_SCALE = (4 / 16.4);   //MPU6050 and MPU3050   16.4 LSB/(deg/s) and we ignore the last 2 bits
+	mw_.updateIMU(update.gyro[0] * MW_GYRO_SCALE, update.gyro[1] * MW_GYRO_SCALE, update.gyro[2] * MW_GYRO_SCALE, update.acc[0] / (float)ACC_1G, update.acc[1] / (float)ACC_1G, update.acc[2] / (float)ACC_1G, init);
+	angles[0] = mw_.getRoll();
+	angles[1] = - mw_.getPitch();
+}
+
+#else
 
 static void RotateVector(float vector[], float roll, float pitch, float yaw)
 {
@@ -35,6 +49,16 @@ static void RotateVector(float vector[], float roll, float pitch, float yaw)
     }
 }
 
+float invSqrt(float x) {
+	float halfx = 0.5f * x;
+	float y = x;
+	long i = *(long*)& y;
+	i = 0x5f3759df - (i >> 1);
+	y = *(float*)& i;
+	y = y * (1.5f - (halfx * y * y));
+	return y;
+}
+
 // IMU::compute updates gravity vector with highly filtered ACC values. It takes a lot of time for ACC values to propagate on startup
 // This method is using much higher update rate
 void IMU::updateGravityVector(const MpuUpdate& update) {
@@ -47,19 +71,27 @@ void IMU::compute(const MpuUpdate& update) {
   float scale =  1000 * GYRO_SCALE; // TODO: use actual time
   RotateVector(accCompensatedVector_, update.gyro[0] * scale, update.gyro[1] * scale, update.gyro[2] * scale);
 
-  int32_t sumAcc = 0;
+  int32_t sumAccSq = 0;
   for (int i = 0; i < 3; i++) {
-      sumAcc += sq((int32_t)update.acc[i]);
+		sumAccSq += sq((int32_t)update.acc[i]);
   }
 
-  float currentGByAcc = sqrt(sumAcc) / ACC_1G;
+  float currRatio = atan2(accCompensatedVector_[1], accCompensatedVector_[2]);
+  float accRatio = atan2(update.acc[1], update.acc[2]);
 
-  if (currentGByAcc > 0.8 && currentGByAcc < 1.2) {
+  if (sumAccSq > sq(ACC_1G * (1 - GRAVITY_TOLERANCE)) && sumAccSq < sq(ACC_1G * (1 + GRAVITY_TOLERANCE)) && fabs(currRatio - accRatio) < 0.5) {
       for (int i = 0; i < 3; i++) {
           accCompensatedVector_[i] = (1 - compFilterAccWeight) * accCompensatedVector_[i] + compFilterAccWeight * update.acc[i];
       }                        
   }
 
+	float inv_sqrt = invSqrt(sq(accCompensatedVector_[0]) + sq(accCompensatedVector_[1]) + sq(accCompensatedVector_[2])) * ACC_1G;
+	accCompensatedVector_[0] *= inv_sqrt;
+	accCompensatedVector_[1] *= inv_sqrt;
+	accCompensatedVector_[2] *= inv_sqrt;
+
   angles[0] = atan2(accCompensatedVector_[1], accCompensatedVector_[2]) * 180 / PI;
   angles[1] = atan2(accCompensatedVector_[0], sqrt(sq(accCompensatedVector_[2]) + sq(accCompensatedVector_[1]))) * 180 / PI;
 }
+
+#endif
