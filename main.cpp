@@ -155,8 +155,8 @@ int main(void)
 	GenericOut beeper(RCC_APB2Periph_GPIOA, GPIOA, GPIO_Pin_12, true);
 	beeper.init();
 
-	// GenericOut debug(RCC_APB2Periph_GPIOA, GPIOA, GPIO_Pin_11, false);
-	// debug.init();
+//	GenericOut debug_out(RCC_APB2Periph_GPIOA, GPIOA, GPIO_Pin_11, false);
+//	debug_out.init();
 
 	FootpadGuard foot_pad_guard(&cfg.foot_pad);
 	Guard* guards[] = { &angle_guard, &foot_pad_guard };
