@@ -25,6 +25,8 @@ void IMU::compute(const MpuUpdate& update, bool init) {
 
 	const float MW_GYRO_SCALE = (4 / 16.4);   //MPU6050 and MPU3050   16.4 LSB/(deg/s) and we ignore the last 2 bits
 	if (init) {
+		// While gyro is getting initialized its data is invalid - ignore gyro.
+		// Take all data from ACC with much higher weight - assuming board is stationary (otherwise gyro would not calibrate)
 		mw_.updateIMU(0, 0, 0, update.acc[0] / (float)ACC_1G, update.acc[1] / (float)ACC_1G, update.acc[2] / (float)ACC_1G, true);
 	}
 	else {
@@ -71,16 +73,17 @@ float invSqrt(float x) {
 	return y;
 }
 
-// IMU::compute updates gravity vector with highly filtered ACC values. It takes a lot of time for ACC values to propagate on startup
-// This method is using much higher update rate
-void IMU::updateGravityVector(const MpuUpdate& update) {
-  for (int i = 0; i < 3; i++) {
-	  accCompensatedVector_[i] = (1 - compFilterAccWeightCalib) * accCompensatedVector_[i] + compFilterAccWeightCalib * update.acc[i];
-  }
-}
+void IMU::compute(const MpuUpdate& update, bool init) {
+	if (init) {
+		// While gyro is getting initialized its data is invalid - ignore gyro.
+		// Take all data from ACC with much higher weight - assuming board is stationary (otherwise gyro would not calibrate)
+	  for (int i = 0; i < 3; i++) {
+		  accCompensatedVector_[i] = (1 - compFilterAccWeightCalib) * accCompensatedVector_[i] + compFilterAccWeightCalib * update.acc[i];
+	  }
+	  return;
+	}
 
-void IMU::compute(const MpuUpdate& update) {
-  float scale =  1000 * GYRO_SCALE; // TODO: use actual time
+  const float scale =  1000 * GYRO_SCALE; // TODO: use actual time
   RotateVector(accCompensatedVector_, update.gyro[0] * scale, update.gyro[1] * scale, update.gyro[2] * scale);
 
   int32_t sumAccSq = 0;
