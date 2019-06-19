@@ -65,7 +65,11 @@ public:
 			beeper_.setState(warning_requested);
 			break;
 		}
+		have_update_ = true;
 	}
+
+	volatile bool have_update_;
+
 private:
 	Config* settings_;
 	IMU& imu_;

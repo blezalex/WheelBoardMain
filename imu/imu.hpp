@@ -12,11 +12,11 @@
 
 class IMU {
 public:
-	IMU(const Config_BalancingConfig* config)
+	IMU(const Config* config)
 #ifndef MADGWICK
 	: accCompensatedVector_{ 0, 0, ACC_1G }, config_(config) {
 #else
-		:mw_(&config_->imu_beta), config_(config) {
+		:mw_(&config_->balance_settings.imu_beta), config_(config) {
 		mw_.begin(1000);
 #endif
 	}
@@ -31,7 +31,7 @@ private:
 	float accCompensatedVector_[3];
 #endif
 
-	const Config_BalancingConfig* config_;
+	const Config* config_;
 	DISALLOW_COPY_AND_ASSIGN(IMU);
 };
 

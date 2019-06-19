@@ -34,6 +34,10 @@ message Config {
     required int32 acc_x = 1 [default = 0];
     required int32 acc_y = 2 [default = 0];
     required int32 acc_z = 3 [default = 0];
+    
+    optional float x_offset = 4 [default = 0];
+    optional float y_offset = 5 [default = 0];
+    optional float z_offset = 6 [default = 0];
   }
 
   optional Callibration callibration = 1;
@@ -86,11 +90,17 @@ message Config {
 	required uint32 global_gyro_lpf = 10 [ default = 2];
 	
 	optional float imu_beta = 11 [ default=0.02 ];
+	
+	// 0 - exponential, 1 natural, 2 - poly
+	optional int32 expo_type = 12 [ default=0 ];
   }
   
   required BalancingConfig balance_settings = 4;
 
   message Misc {
+    // 0 - no log, 1 - log angle, 2 - log output
+  	optional int32 log_type = 1 [ default = 0 ];
+  	
     required float beep_rc = 6 [default = 0.05];
 
   	// 0-1, 1 = 100% of output power = no warning at all

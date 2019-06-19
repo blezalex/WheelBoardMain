@@ -33,8 +33,8 @@ void IMU::compute(const MpuUpdate& update, bool init) {
 		mw_.updateIMU(update.gyro[0] * MW_GYRO_SCALE, update.gyro[1] * MW_GYRO_SCALE, update.gyro[2] * MW_GYRO_SCALE, update.acc[0] / (float)ACC_1G, update.acc[1] / (float)ACC_1G, update.acc[2] / (float)ACC_1G, false);
 	}
 
-	angles[0] = mw_.getRoll();
-	angles[1] = - mw_.getPitch();
+	angles[0] = mw_.getRoll() + config_->callibration.x_offset; // TODO: replace with proper vector rotation in MpuUpdate (so pid controler sees rotated gyro input too)
+	angles[1] = - mw_.getPitch() + config_->callibration.y_offset;
 
 //	GPIOA->BRR = GPIO_Pin_11;
 }
@@ -105,8 +105,8 @@ void IMU::compute(const MpuUpdate& update, bool init) {
 	accCompensatedVector_[1] *= inv_sqrt;
 	accCompensatedVector_[2] *= inv_sqrt;
 
-  angles[0] = atan2(accCompensatedVector_[1], accCompensatedVector_[2]) * 180 / PI;
-  angles[1] = atan2(accCompensatedVector_[0], sqrt(sq(accCompensatedVector_[2]) + sq(accCompensatedVector_[1]))) * 180 / PI;
+  angles[0] = atan2(accCompensatedVector_[1], accCompensatedVector_[2]) * 180 / PI + config_->callibration.x_offset;
+  angles[1] = atan2(accCompensatedVector_[0], sqrt(sq(accCompensatedVector_[2]) + sq(accCompensatedVector_[1]))) * 180 / PI + config_->callibration.y_offset;
 }
 
 #endif

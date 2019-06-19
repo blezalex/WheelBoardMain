@@ -52,7 +52,7 @@ Madgwick::Madgwick(const float* beta_ptr) :beta_ptr_(beta_ptr) {
 void Madgwick::updateIMU(float gx, float gy, float gz, float ax, float ay, float az, bool init) {
 	beta = *beta_ptr_;
 	if (init) {
-		beta *=20;
+		beta = 0.5;
 	}
 
 	float recipNorm;

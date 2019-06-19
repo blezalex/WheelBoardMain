@@ -139,7 +139,7 @@ int main(void)
 	status_led.init();
 	status_led.setState(0);
 
-	IMU imu(&cfg.balance_settings);
+	IMU imu(&cfg);
 	AngleGuard angle_guard(imu, &cfg.balance_settings);
 	InitWaiter waiter(&status_led, &imu, &angle_guard); 	// wait for angle. Wait for pads too?
 	accGyro.setListener(&waiter);
@@ -202,12 +202,14 @@ int main(void)
 			cnt++;
 		}
 		*/
-
-		if ((uint16_t)(millis() - last_check_time) > 100u) {
+		if (cfg.misc.log_type != 0 && (uint16_t)(millis() - last_check_time) > 100u) {
 			last_check_time = millis();
-			int16_t out = (motor_out.get() - 1500) / 4;
-			debug[write_pos++] = (int8_t)imu.angles[ANGLE_DRIVE];
-		//	debug[write_pos++] = out;
+			switch (cfg.misc.log_type ) {
+				case 1:debug[write_pos++] = (int8_t)imu.angles[ANGLE_DRIVE]; break;
+				case 2:debug[write_pos++] = (int8_t)((motor_out.get() - 1500) / 4); break;
+				case 3:debug[write_pos++] = (int8_t)(imu.angles[ANGLE_DRIVE] * 10); break;
+			}
+
 			if (write_pos >= sizeof(debug))
 				write_pos = 0;
 		}
