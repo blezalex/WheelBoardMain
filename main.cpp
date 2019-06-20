@@ -30,6 +30,7 @@
 #include "stm32f10x_adc.h"
 #include "drv/settings/settings.hpp"
 #include "drv/comms/communicator.hpp"
+#include "drv/vesc/vesc.hpp"
 
 
 extern "C" void EXTI15_10_IRQHandler(void)
@@ -172,6 +173,8 @@ int main(void)
 	Communicator comms(&Serial1);
 	uint16_t last_check_time = 0;
 
+	VescComm vesc(&Serial2);
+
 	write_pos = 0;
 	read_pos = 0;
     while(1) { // background work
@@ -202,8 +205,11 @@ int main(void)
 			cnt++;
 		}
 		*/
-		if (cfg.misc.log_type != 0 && (uint16_t)(millis() - last_check_time) > 100u) {
+		if ((uint16_t)(millis() - last_check_time) > 100u) {
 			last_check_time = millis();
+
+			vesc.requestStats();
+
 			switch (cfg.misc.log_type ) {
 				case 1:debug[write_pos++] = (int8_t)imu.angles[ANGLE_DRIVE]; break;
 				case 2:debug[write_pos++] = (int8_t)((motor_out.get() - 1500) / 4); break;
@@ -273,7 +279,20 @@ int main(void)
     		stats.stear_angle = imu.angles[ANGLE_STEER];
     		stats.pad_pressure1 = foot_pad_guard.getLevel(0);
     		stats.pad_pressure2 = foot_pad_guard.getLevel(1);
-			int16_t data_len = saveProtoToBuffer(scratch, sizeof(scratch), Stats_fields,  &stats);
+    		stats.has_batt_current = true;
+    		stats.batt_current = vesc. mc_values_.avg_input_current;
+    		stats.has_batt_voltage = true;
+    		stats.batt_voltage = vesc.mc_values_.v_in;
+    		stats.has_motor_current = true;
+    		stats.motor_current = vesc.mc_values_.avg_motor_current;
+    		stats.has_distance_traveled = true;
+    		stats.distance_traveled = vesc.mc_values_.tachometer_abs;
+    		stats.has_speed = true;
+    		stats.speed = vesc.mc_values_.rpm;
+    		stats.has_motor_duty = true;
+    		stats.motor_duty = vesc.mc_values_.duty_now;
+
+    		int16_t data_len = saveProtoToBuffer(scratch, sizeof(scratch), Stats_fields,  &stats);
     		if (data_len != -1) {
     			comms.SendMsg(ReplyId_STATS, scratch, data_len);
     		}
@@ -300,5 +319,6 @@ int main(void)
     		comms.SendMsg(ReplyId_GENERIC_OK);
     		break;
     	}
+    	vesc.update();
     }
 }

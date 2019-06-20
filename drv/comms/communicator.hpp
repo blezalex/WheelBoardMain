@@ -68,13 +68,9 @@ public:
 			if (bytes_to_move > 0) {
 				memmove(rx_data, rx_data + expected_msg_len(), bytes_to_move);
 			}
-			buffer_pos_ = 0;
+			buffer_pos_ = bytes_to_move;
 		}
 
-//		char buff[30] = {0};
-//		int size = sprintf(buff, "%d\n", buffer_pos_);
-//				Serial1.Send((uint8_t*)buff, size);
-	//	comms_->Send(rx_data, 100);
     	int32_t received_bytes = comms_->Read(rx_data + buffer_pos_, sizeof(rx_data) - buffer_pos_);
     	buffer_pos_+= received_bytes;
     	if (buffer_pos_ > kHeaderSize) {
@@ -104,10 +100,8 @@ public:
 				{
 					msg_id = RequestId_MSG_NONE;
 					SendMsg(ReplyId_CRC_MISMATCH);
-				//	comms_->Send(rx_data, 100);
 				}
 
-    			//buffer_pos_ = 0;
     			move_message_ = true;
     			return msg_id;
     		}

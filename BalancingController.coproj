@@ -89,6 +89,7 @@
     <Component id="467" name="MISC" path="" type="2"/>
   </Components>
   <Files>
+    <File name="drv/vesc/crc.h" path="drv/vesc/crc.h" type="1"/>
     <File name="drv/mpu6050/mpu6050_registers.hpp" path="drv/mpu6050/mpu6050_registers.hpp" type="1"/>
     <File name="proto/pb_decode.h" path="../nanopb-0.3.9.2-windows-x86/pb_decode.h" type="1"/>
     <File name="drv/mpu6050/mpu.cpp" path="drv/mpu6050/mpu.cpp" type="1"/>
@@ -101,60 +102,63 @@
     <File name="arduino.h" path="arduino.h" type="1"/>
     <File name="proto/pb_common.c" path="../nanopb-0.3.9.2-windows-x86/pb_common.c" type="1"/>
     <File name="imu/imu.hpp" path="imu/imu.hpp" type="1"/>
+    <File name="drv/vesc/vesc.cpp" path="drv/vesc/vesc.cpp" type="1"/>
     <File name="stm_lib/src/stm32f10x_tim.c" path="stm_lib/src/stm32f10x_tim.c" type="1"/>
     <File name="cmsis_boot/startup" path="" type="2"/>
     <File name="io/i2c.hpp" path="io/i2c.hpp" type="1"/>
     <File name="cmsis/core_cmFunc.h" path="cmsis/core_cmFunc.h" type="1"/>
     <File name="stm_lib/src/misc.c" path="stm_lib/src/misc.c" type="1"/>
-    <File name="stm_lib/src/stm32f10x_iwdg.c" path="stm_lib/src/stm32f10x_iwdg.c" type="1"/>
     <File name="drv/mpu6050" path="" type="2"/>
-    <File name="drv/mpu6050/mpu.hpp" path="drv/mpu6050/mpu.hpp" type="1"/>
+    <File name="stm_lib/src/stm32f10x_iwdg.c" path="stm_lib/src/stm32f10x_iwdg.c" type="1"/>
     <File name="cmsis_boot/stm32f10x.h" path="cmsis_boot/stm32f10x.h" type="1"/>
+    <File name="drv/mpu6050/mpu.hpp" path="drv/mpu6050/mpu.hpp" type="1"/>
     <File name="cmsis_boot/stm32f10x_conf.h" path="cmsis_boot/stm32f10x_conf.h" type="1"/>
-    <File name="stm_lib/inc/stm32f10x_flash.h" path="stm_lib/inc/stm32f10x_flash.h" type="1"/>
     <File name="global.h" path="global.h" type="1"/>
     <File name="guards/guard.hpp" path="guards/guard.hpp" type="1"/>
+    <File name="stm_lib/inc/stm32f10x_flash.h" path="stm_lib/inc/stm32f10x_flash.h" type="1"/>
     <File name="syscalls/syscalls.c" path="syscalls/syscalls.c" type="1"/>
-    <File name="stm_lib/src/stm32f10x_adc.c" path="stm_lib/src/stm32f10x_adc.c" type="1"/>
     <File name="stm_lib/inc/stm32f10x_dma.h" path="stm_lib/inc/stm32f10x_dma.h" type="1"/>
+    <File name="stm_lib/src/stm32f10x_adc.c" path="stm_lib/src/stm32f10x_adc.c" type="1"/>
     <File name="stm_lib/inc/stm32f10x_iwdg.h" path="stm_lib/inc/stm32f10x_iwdg.h" type="1"/>
     <File name="io/usart.hpp" path="io/usart.hpp" type="1"/>
-    <File name="drv/settings/settings.cpp" path="drv/settings/settings.cpp" type="1"/>
     <File name="drv" path="" type="2"/>
+    <File name="drv/settings/settings.cpp" path="drv/settings/settings.cpp" type="1"/>
     <File name="stm_lib/src/stm32f10x_usart.c" path="stm_lib/src/stm32f10x_usart.c" type="1"/>
     <File name="guards/angleGuard.hpp" path="guards/angleGuard.hpp" type="1"/>
     <File name="drv/comms" path="" type="2"/>
-    <File name="drv/comms/protocol.pb.c" path="drv/comms/protocol.pb.c" type="1"/>
     <File name="cmsis_boot/startup/startup_stm32f10x_md.c" path="cmsis_boot/startup/startup_stm32f10x_md.c" type="1"/>
     <File name="proto/pb_decode.c" path="../nanopb-0.3.9.2-windows-x86/pb_decode.c" type="1"/>
+    <File name="drv/comms/protocol.pb.c" path="drv/comms/protocol.pb.c" type="1"/>
     <File name="stm_lib/src/stm32f10x_gpio.c" path="stm_lib/src/stm32f10x_gpio.c" type="1"/>
     <File name="stm_lib/inc/stm32f10x_gpio.h" path="stm_lib/inc/stm32f10x_gpio.h" type="1"/>
     <File name="stm_lib/inc/stm32f10x_usart.h" path="stm_lib/inc/stm32f10x_usart.h" type="1"/>
     <File name="drv/settings" path="" type="2"/>
     <File name="io/genericOut.hpp" path="io/genericOut.hpp" type="1"/>
-    <File name="proto/pb_common.h" path="../nanopb-0.3.9.2-windows-x86/pb_common.h" type="1"/>
     <File name="imu/MadgwickAHRS.cpp" path="imu/MadgwickAHRS.cpp" type="1"/>
-    <File name="cmsis_boot/system_stm32f10x.c" path="cmsis_boot/system_stm32f10x.c" type="1"/>
+    <File name="proto/pb_common.h" path="../nanopb-0.3.9.2-windows-x86/pb_common.h" type="1"/>
     <File name="guards" path="" type="2"/>
+    <File name="cmsis_boot/system_stm32f10x.c" path="cmsis_boot/system_stm32f10x.c" type="1"/>
     <File name="stm_lib/inc/misc.h" path="stm_lib/inc/misc.h" type="1"/>
-    <File name="io/usart.cpp" path="io/usart.cpp" type="1"/>
     <File name="cmsis/core_cmInstr.h" path="cmsis/core_cmInstr.h" type="1"/>
+    <File name="io/usart.cpp" path="io/usart.cpp" type="1"/>
     <File name="drv/comms/protocol.pb.h" path="drv/comms/protocol.pb.h" type="1"/>
-    <File name="balanceController.hpp" path="balanceController.hpp" type="1"/>
     <File name="drv/comms/protocol.proto" path="drv/comms/protocol.proto" type="1"/>
+    <File name="balanceController.hpp" path="balanceController.hpp" type="1"/>
     <File name="cmsis/core_cm3.h" path="cmsis/core_cm3.h" type="1"/>
     <File name="stm_lib/src/stm32f10x_exti.c" path="stm_lib/src/stm32f10x_exti.c" type="1"/>
-    <File name="stm_lib/src/stm32f10x_rcc.c" path="stm_lib/src/stm32f10x_rcc.c" type="1"/>
     <File name="proto/pb_encode.h" path="../nanopb-0.3.9.2-windows-x86/pb_encode.h" type="1"/>
+    <File name="stm_lib/src/stm32f10x_rcc.c" path="stm_lib/src/stm32f10x_rcc.c" type="1"/>
     <File name="io/i2c.cpp" path="io/i2c.cpp" type="1"/>
+    <File name="drv/vesc/vesc.hpp" path="drv/vesc/vesc.hpp" type="1"/>
     <File name="stm_lib/src/stm32f10x_dma.c" path="stm_lib/src/stm32f10x_dma.c" type="1"/>
-    <File name="proto" path="" type="2"/>
     <File name="stm_lib/src" path="" type="2"/>
+    <File name="proto" path="" type="2"/>
     <File name="cmsis" path="" type="2"/>
     <File name="stm_lib" path="" type="2"/>
     <File name="guards/footpadGuard.hpp" path="guards/footpadGuard.hpp" type="1"/>
     <File name="stm_lib/inc/stm32f10x_exti.h" path="stm_lib/inc/stm32f10x_exti.h" type="1"/>
     <File name="stm_lib/src/stm32f10x_flash.c" path="stm_lib/src/stm32f10x_flash.c" type="1"/>
+    <File name="drv/vesc" path="" type="2"/>
     <File name="stm_lib/inc/stm32f10x_adc.h" path="stm_lib/inc/stm32f10x_adc.h" type="1"/>
     <File name="main.cpp" path="main.cpp" type="1"/>
     <File name="cmsis_boot/system_stm32f10x.h" path="cmsis_boot/system_stm32f10x.h" type="1"/>
