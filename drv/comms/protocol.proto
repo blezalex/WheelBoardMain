@@ -45,8 +45,8 @@ message Config {
   message PidConfig {
     required float p = 1 [default = 1200 ];
     required float d = 2 [default = 0.65 ];
-    required float i = 3 [default = 0.2 ];
-    required float max_i = 4 [default = 500 ];
+    required float i = 3 [default = 0.1 ];
+    required float max_i = 4 [default = 3 ];
   }
 
   required PidConfig balance_pid = 2;
@@ -62,10 +62,10 @@ message Config {
 
   message BalancingConfig {
   	// min value is 1 = linear
-	required float balance_expo = 1 [default = 1.4 ];
+	required float balance_expo = 1 [default = 0.15 ];
 	
 	// scale input angel in deg by deviding by 'balance_angle_scaling'
-	required float balance_angle_scaling = 2 [default = 12];
+	required float balance_angle_scaling = 2 [default = 15];
 	
 	required int32 max_start_angle_steer = 3 [default = 15];
 	required int32 shutoff_angle_steer = 4 [default = 40];

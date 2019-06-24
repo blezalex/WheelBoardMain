@@ -214,6 +214,8 @@ int main(void)
 				case 1:debug[write_pos++] = (int8_t)imu.angles[ANGLE_DRIVE]; break;
 				case 2:debug[write_pos++] = (int8_t)((motor_out.get() - 1500) / 4); break;
 				case 3:debug[write_pos++] = (int8_t)(imu.angles[ANGLE_DRIVE] * 10); break;
+				case 4:debug[write_pos++] = (int8_t)(vesc.mc_values_.avg_motor_current); break;
+				case 5:debug[write_pos++] = (int8_t)(vesc.mc_values_.v_in); break;
 			}
 
 			if (write_pos >= sizeof(debug))

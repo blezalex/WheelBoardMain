@@ -57,6 +57,7 @@ public:
 		uint16_t time = millis();
 		if ((uint16_t)(time - last_uart_data_time_) > kMsgTimeoutMs) {
 			buffer_pos_ = 0;
+			move_message_ = false;
 	//		comms_->Send("Timeout\n", 8);
 		}
 		last_uart_data_time_ = time;
@@ -67,8 +68,8 @@ public:
 
 			if (bytes_to_move > 0) {
 				memmove(rx_data, rx_data + expected_msg_len(), bytes_to_move);
+				buffer_pos_ = bytes_to_move;
 			}
-			buffer_pos_ = bytes_to_move;
 		}
 
     	int32_t received_bytes = comms_->Read(rx_data + buffer_pos_, sizeof(rx_data) - buffer_pos_);
