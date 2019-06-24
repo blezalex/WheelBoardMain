@@ -123,4 +123,5 @@ message Stats {
   required uint32 pad_pressure2 = 10;
   
   optional float motor_duty = 11;
+  optional float esc_temp = 12;
 }

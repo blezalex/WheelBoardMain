@@ -216,6 +216,7 @@ int main(void)
 				case 3:debug[write_pos++] = (int8_t)(imu.angles[ANGLE_DRIVE] * 10); break;
 				case 4:debug[write_pos++] = (int8_t)(vesc.mc_values_.avg_motor_current); break;
 				case 5:debug[write_pos++] = (int8_t)(vesc.mc_values_.v_in); break;
+				case 6:debug[write_pos++] = (int8_t)(vesc.mc_values_.avg_input_current); break;
 			}
 
 			if (write_pos >= sizeof(debug))
@@ -293,6 +294,8 @@ int main(void)
     		stats.speed = vesc.mc_values_.rpm;
     		stats.has_motor_duty = true;
     		stats.motor_duty = vesc.mc_values_.duty_now;
+    		stats.has_esc_temp = true;
+    		stats.esc_temp = vesc.mc_values_.temp_mos_filtered;
 
     		int16_t data_len = saveProtoToBuffer(scratch, sizeof(scratch), Stats_fields,  &stats);
     		if (data_len != -1) {

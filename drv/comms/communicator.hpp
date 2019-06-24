@@ -70,6 +70,9 @@ public:
 				memmove(rx_data, rx_data + expected_msg_len(), bytes_to_move);
 				buffer_pos_ = bytes_to_move;
 			}
+			else {
+				buffer_pos_ = 0;
+			}
 		}
 
     	int32_t received_bytes = comms_->Read(rx_data + buffer_pos_, sizeof(rx_data) - buffer_pos_);
