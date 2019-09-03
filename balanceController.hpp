@@ -21,8 +21,6 @@ static float applyExpoPoly(float x, float k) {
 }
 
 
-// TODO: chck if gyro needs to be negated!!!!!!!!!!!!!!!!!!!!!!
-
 class BalanceController  {
 public:
 	BalanceController(const Config* settings) :

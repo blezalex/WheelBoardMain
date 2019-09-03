@@ -26,7 +26,7 @@ public:
 #define ACC_1G 512
 
 #define GYRO_CALIBRATION_ITERATIONS_REQUIRED 2048
-#define GYRO_CALIBRATION_MAX_DIFF 3
+#define GYRO_CALIBRATION_MAX_DIFF 4
 
 class Mpu {
 public:

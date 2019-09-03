@@ -33,6 +33,26 @@ public:
 		return new_out;
 	}
 
+	// Send BRAKE_MOTOR_CMD after a short delay after controller goes into Stopped state.
+	void processBrakes() {
+		if (brakes_on_) {
+			motor_out_.set(BRAKE_MOTOR_CMD);
+			first_stopped_to_brake_iteration_ = true;
+			return;
+		}
+
+		motor_out_.set(NEUTRAL_MOTOR_CMD);
+		if (first_stopped_to_brake_iteration_) {
+			first_stopped_to_brake_iteration_ = false;
+			stopped_since_ts_ = millis();
+		}
+		else {
+			if (millis() - stopped_since_ts_ > 200) {
+				brakes_on_ = true;
+			}
+		}
+	}
+
 	// Main control loop. Runs at 1000hz Must finish in less than 1ms otherwise controller will freeze.
 	void processUpdate(const MpuUpdate& update) {
 		imu_.compute(update);
@@ -40,7 +60,7 @@ public:
 
 		switch (current_state) {
 		case State::Stopped:
-			motor_out_.set(NEUTRAL_MOTOR_CMD);
+			processBrakes();
 			status_led_.setState(0);
 			beeper_.setState(0);
 			break;
@@ -82,4 +102,7 @@ private:
 	uint16_t prev_out_;
 	GenericOut& green_led_;
 	LPF motor_out_lpf_;
+	uint16_t stopped_since_ts_;
+	bool brakes_on_ = false;
+	bool first_stopped_to_brake_iteration_ = true;
 };

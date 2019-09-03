@@ -170,10 +170,11 @@ void Mpu::handleGyroData(int16_t* gyro,  uint8_t* rawData) {
 		}
 
 		bool allAxisHaveSmallDiff = true;
-		int calibrationIterationNumber = GYRO_CALIBRATION_ITERATIONS_REQUIRED - gyroCalibrationIterationsLeft_;
+		const int calibrationIterationNumber = GYRO_CALIBRATION_ITERATIONS_REQUIRED - gyroCalibrationIterationsLeft_;
 		for (int axis = 0; axis < 3; axis++) {
 			gyroCalibrationAccumulator_[axis] += gyro[axis];
-			allAxisHaveSmallDiff = allAxisHaveSmallDiff && abs(gyroCalibrationAccumulator_[axis] / (calibrationIterationNumber + 1) -gyro[axis]) < GYRO_CALIBRATION_MAX_DIFF;
+			const int axisGyroAvg = gyroCalibrationAccumulator_[axis] / (calibrationIterationNumber + 1);
+			allAxisHaveSmallDiff = allAxisHaveSmallDiff && abs(axisGyroAvg - gyro[axis]) < GYRO_CALIBRATION_MAX_DIFF;
 		}
 
 		if (allAxisHaveSmallDiff) { // successful iteration

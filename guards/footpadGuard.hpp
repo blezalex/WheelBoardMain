@@ -24,6 +24,7 @@ private:
 	const Config_FootPadSettings* settings_;
 	uint16_t stop_request_timestamp_ = 0;
 	bool stop_requested_ = false;
+	bool seen_booth_off = false;
 
 	DISALLOW_COPY_AND_ASSIGN(FootpadGuard);
 };

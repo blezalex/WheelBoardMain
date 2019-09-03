@@ -69,10 +69,21 @@ FootpadGuard::FootpadGuard(const Config_FootPadSettings* settings)
 }
 
 bool FootpadGuard::CanStart() {
+	if (!seen_booth_off) {
+
+		// check if both off now
+		if (padLevelFilter[0].getVal() < settings_->min_level_to_continue && padLevelFilter[1].getVal() < settings_->min_level_to_continue) {
+			seen_booth_off = true;
+		}
+		else {
+			// sensor failure or still pressed since start.
+			return false;
+		}
+	}
 	return padLevelFilter[0].getVal() > settings_->min_level_to_start && padLevelFilter[1].getVal() > settings_->min_level_to_start;
 }
 
-// Stop if one of the foopads below the threshold for at least shutoff_delay_ms
+// Stop if one of the footpads below the threshold for at least shutoff_delay_ms
 bool FootpadGuard::MustStop() {
 	bool stop_condition = padLevelFilter[0].getVal() < settings_->min_level_to_continue || padLevelFilter[1].getVal() < settings_->min_level_to_continue;
 

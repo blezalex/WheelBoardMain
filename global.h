@@ -25,6 +25,9 @@
 #define MAX_MOTOR_CMD 2010
 #define NEUTRAL_MOTOR_CMD 1500
 
+// Configure brake current on invalid pulse with 100ms timeout
+#define BRAKE_MOTOR_CMD 0
+
 #define MOTOR_CMD_RANGE (MAX_MOTOR_CMD - NEUTRAL_MOTOR_CMD)
 
 #define ANGLE_DRIVE 1
