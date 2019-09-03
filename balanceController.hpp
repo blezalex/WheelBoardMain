@@ -1,24 +1,9 @@
 #pragma once
-#include <math.h>
+
 
 #include "global.h"
 #include "pid.hpp"
 
-inline int sgn(float val) { return (0 < val) - (val < 0); }
-
-static float applyExpoReal(float x, float k) { return sgn(x) * powf(fabs(x), 1+k); }
-
-constexpr float E =  2.71828;
-
-static float applyExpoNatural(float x, float k) {
-	float absx = fabs(x);
-	return sgn(x) * (powf(E, k*absx) - 1) / (powf(E, k) - 1) ;
-}
-
-static float applyExpoPoly(float x, float k) {
-	float absx = fabs(x);
-	return sgn(x) * absx/(1+k*(1-absx));
-}
 
 
 class BalanceController  {

@@ -282,20 +282,14 @@ int main(void)
     		stats.stear_angle = imu.angles[ANGLE_STEER];
     		stats.pad_pressure1 = foot_pad_guard.getLevel(0);
     		stats.pad_pressure2 = foot_pad_guard.getLevel(1);
-    		stats.has_batt_current = true;
     		stats.batt_current = vesc. mc_values_.avg_input_current;
-    		stats.has_batt_voltage = true;
     		stats.batt_voltage = vesc.mc_values_.v_in;
-    		stats.has_motor_current = true;
     		stats.motor_current = vesc.mc_values_.avg_motor_current;
-    		stats.has_distance_traveled = true;
     		stats.distance_traveled = vesc.mc_values_.tachometer_abs;
-    		stats.has_speed = true;
     		stats.speed = vesc.mc_values_.rpm;
-    		stats.has_motor_duty = true;
     		stats.motor_duty = vesc.mc_values_.duty_now;
-    		stats.has_esc_temp = true;
     		stats.esc_temp = vesc.mc_values_.temp_mos_filtered;
+    		stats.motor_temp = vesc.mc_values_.temp_motor_filtered;
 
     		int16_t data_len = saveProtoToBuffer(scratch, sizeof(scratch), Stats_fields,  &stats);
     		if (data_len != -1) {

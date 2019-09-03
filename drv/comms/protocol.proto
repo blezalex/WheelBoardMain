@@ -47,6 +47,7 @@ message Config {
     required float d = 2 [default = 0.65 ];
     required float i = 3 [default = 0.1 ];
     required float max_i = 4 [default = 3 ];
+	optional float i_expo = 13 [ default = 0 ];
   }
 
   required PidConfig balance_pid = 2;
@@ -111,17 +112,18 @@ message Config {
 }
 
 message Stats {
-  optional float batt_voltage = 1;
-  optional float batt_current = 2;
-  optional float motor_current = 3;
-  optional float speed = 5;
-  optional float distance_traveled = 6;
+  required float batt_voltage = 1;
+  required float batt_current = 2;
+  required float motor_current = 3;
+  required float speed = 5;
+  required float distance_traveled = 6;
   required float drive_angle = 7;
   required float stear_angle = 8;
   
   required uint32 pad_pressure1 = 9;
   required uint32 pad_pressure2 = 10;
   
-  optional float motor_duty = 11;
-  optional float esc_temp = 12;
+  required float motor_duty = 11;
+  required float esc_temp = 12;
+  required float motor_temp = 13;
 }
