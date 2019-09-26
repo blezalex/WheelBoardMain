@@ -4,7 +4,6 @@
 #include "../nanopb-0.3.9.2-windows-x86/pb_encode.h"
 #include "../nanopb-0.3.9.2-windows-x86/pb_decode.h"
 #include "stm32f10x_flash.h"
-#include "stm32f10x_iwdg.h"
 
 #define CONFIG_SIZE_MAX 512
 #define CONFIG_FLASH_PAGE_ADDR (FLASH_BASE + 128*1024 - CONFIG_SIZE_MAX)
@@ -26,7 +25,6 @@ int32_t saveProtoToBuffer(uint8_t* buffer, int16_t max_size, const pb_field_t fi
 		return -sizestream.bytes_written;
 	}
 
-
 	pb_ostream_t save_stream = { &saveToBufferFn, &buffer, max_size, 0 };
 	if (!pb_encode(&save_stream, fields, src_struct)) {
 		if (log != nullptr)
@@ -36,9 +34,6 @@ int32_t saveProtoToBuffer(uint8_t* buffer, int16_t max_size, const pb_field_t fi
 		}
 		return -1;
 	}
-
-
-
 
 	return sizestream.bytes_written;
 }
@@ -53,10 +48,6 @@ bool saveSettingsToFlash(const Config& config) {
 	if (FLASH_ErasePage(CONFIG_FLASH_PAGE_ADDR) != FLASH_Status::FLASH_COMPLETE)
 		return false;
 
-	for (int w  = 0; w < 1000; w++) { // Waste some time. Flash writes lock up the bus and can cause MCU to miss interrupt and lock up
-		IWDG_ReloadCounter();
-	}
-
 	if (FLASH_ProgramWord((uint32_t)CONFIG_FLASH_PAGE_ADDR, size) != FLASH_Status::FLASH_COMPLETE)
 		return false;
 
@@ -65,10 +56,6 @@ bool saveSettingsToFlash(const Config& config) {
 		// +4 for size block
 		if (FLASH_ProgramWord((uint32_t)CONFIG_FLASH_PAGE_ADDR + i*4 + 4, ((uint32_t*)buffer)[i]) != FLASH_Status::FLASH_COMPLETE)
 			return false;
-		// Waste some time.
-		for (int w  = 0; w < 1000; w++) {
-			IWDG_ReloadCounter();
-		}
 	}
 
 	FLASH_Lock();

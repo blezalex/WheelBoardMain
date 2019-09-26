@@ -31,6 +31,7 @@
 #include "drv/settings/settings.hpp"
 #include "drv/comms/communicator.hpp"
 #include "drv/vesc/vesc.hpp"
+#include "ledController.hpp"
 
 
 extern "C" void EXTI15_10_IRQHandler(void)
@@ -87,6 +88,7 @@ void applyCalibrationConfig(const Config& cfg, Mpu* accGyro) {
 	int16_t acc_offsets[3] =  { (int16_t)cfg.callibration.acc_x, (int16_t)cfg.callibration.acc_y, (int16_t)cfg.callibration.acc_z };
 	accGyro->applyAccZeroOffsets(acc_offsets);
 }
+
 
 int main(void)
  {
@@ -146,6 +148,8 @@ int main(void)
 	accGyro.setListener(&waiter);
 	accGyro.init(cfg.balance_settings.global_gyro_lpf);
 
+
+	led_controller_init();
 	waiter.waitForAccGyroCalibration();
 
 	// 17355 ~65% cpu remaining
@@ -179,6 +183,9 @@ int main(void)
 	read_pos = 0;
     while(1) { // background work
       	IWDG_ReloadCounter();
+
+      	//led_controller_set_state(1000, -10);
+      	led_controller_update();
 /*
     	// Serial port test (mirror in -> out)
     	if (Serial1.HasData()) {
@@ -208,6 +215,7 @@ int main(void)
 		if ((uint16_t)(millis() - last_check_time) > 100u) {
 			last_check_time = millis();
 
+			led_controller_set_state(vesc.mc_values_.rpm, imu.angles[ANGLE_DRIVE]);
 			vesc.requestStats();
 
 			switch (cfg.misc.log_type ) {
