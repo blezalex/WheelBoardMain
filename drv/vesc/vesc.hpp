@@ -24,6 +24,10 @@ public:
 
 	void requestStats();
 
+	void setCurrent(float current);
+
+	void setCurrentBrake(float current);
+
 	int update();
 
 public:

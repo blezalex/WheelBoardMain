@@ -94,8 +94,33 @@ void VescComm::sendRequest(const uint8_t* payload, int payload_len) {
 	serial_->Send(footer, sizeof(footer));
 }
 
+void buffer_append_int32(uint8_t* buffer, int32_t number, int32_t *index) {
+	buffer[(*index)++] = number >> 24;
+	buffer[(*index)++] = number >> 16;
+	buffer[(*index)++] = number >> 8;
+	buffer[(*index)++] = number;
+}
+
+void buffer_append_float32(uint8_t* buffer, float number, float scale, int32_t *index) {
+    buffer_append_int32(buffer, (int32_t)(number * scale), index);
+}
+
 void VescComm::requestStats() {
 	uint8_t request[] = {COMM_GET_VALUES};
+	sendRequest(request , sizeof(request));
+}
+
+void VescComm::setCurrent(float current) {
+	uint8_t request[] = {COMM_SET_CURRENT, 0, 0, 0, 0};
+	int32_t send_index;
+	buffer_append_float32(request, current, 1000.0, &send_index);
+	sendRequest(request , sizeof(request));
+}
+
+void VescComm::setCurrentBrake(float current) {
+	uint8_t request[] = {COMM_SET_CURRENT_BRAKE, 0, 0, 0, 0};
+	int32_t send_index;
+	buffer_append_float32(request, current, 1000.0, &send_index);
 	sendRequest(request , sizeof(request));
 }
 
@@ -202,5 +227,5 @@ int VescComm::update() {
 		}
 	}
 
-		return 0;
+	return 0;
 }
