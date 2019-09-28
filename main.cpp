@@ -167,7 +167,10 @@ int main(void)
 	Guard* guards[] = { &angle_guard, &foot_pad_guard };
 	int guards_count = sizeof(guards) / sizeof(Guard*);
 
-	BoardController main_ctrl(&cfg, imu, motor_out, status_led, beeper, guards, guards_count, green_led);
+	VescComm vesc(&Serial2);
+
+
+	BoardController main_ctrl(&cfg, imu, motor_out, status_led, beeper, guards, guards_count, green_led, &vesc);
 
 	accGyro.setListener(&main_ctrl);
 
@@ -177,7 +180,7 @@ int main(void)
 	Communicator comms(&Serial1);
 	uint16_t last_check_time = 0;
 
-	VescComm vesc(&Serial2);
+
 
 	write_pos = 0;
 	read_pos = 0;
@@ -216,8 +219,6 @@ int main(void)
 			last_check_time = millis();
 
 			led_controller_set_state(vesc.mc_values_.rpm, imu.angles[ANGLE_DRIVE]);
-			vesc.requestStats();
-
 			switch (cfg.misc.log_type ) {
 				case 1:debug[write_pos++] = (int8_t)imu.angles[ANGLE_DRIVE]; break;
 				case 2:debug[write_pos++] = (int8_t)((motor_out.get() - 1500) / 4); break;
@@ -326,6 +327,16 @@ int main(void)
     		comms.SendMsg(ReplyId_GENERIC_OK);
     		break;
     	}
-    	vesc.update();
+    	if (vesc.update() == (uint8_t)VescComm::COMM_PACKET_ID::COMM_GET_VALUES) {
+    		// got a stats update; recalculate smoothed values
+    		static LPF erpm_lpf(&cfg.misc.erpm_rc);
+    		vesc.mc_values_.erpm_smoothed = erpm_lpf.compute(vesc.mc_values_.rpm);
+
+    		static LPF v_in_lpf(&cfg.misc.volt_rc);
+    		vesc.mc_values_.v_in_smoothed = v_in_lpf.compute(vesc.mc_values_.v_in);
+
+    		static LPF duty_lpf(&cfg.misc.duty_rc);
+    		vesc.mc_values_.duty_smoothed = vesc.mc_values_.duty_smoothed;
+    	}
     }
 }
