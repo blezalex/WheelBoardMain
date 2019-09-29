@@ -8,7 +8,7 @@ GenericOut::GenericOut(uint32_t RCC_APB2Periph, GPIO_TypeDef* port, uint16_t pin
 
 }
 
-void GenericOut::init() {
+void GenericOut::init(bool open_drain) {
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_, ENABLE);
 
 	setState(0);
@@ -17,7 +17,7 @@ void GenericOut::init() {
     GPIO_InitTypeDef  GPIO_InitStructure;
     GPIO_InitStructure.GPIO_Pin =  pin_;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+    GPIO_InitStructure.GPIO_Mode = open_drain ? GPIO_Mode_Out_OD : GPIO_Mode_Out_PP;
     GPIO_Init(port_, &GPIO_InitStructure);
 }
 

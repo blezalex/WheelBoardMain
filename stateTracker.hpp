@@ -58,18 +58,15 @@ private:
 	}
 
 	void handleStoppedState() {
-		bool all_ok_to_start = true;
 		for (int i = 0; i < guards_count_; i++) {
 			if (!guards_[i]->CanStart()) {
-				all_ok_to_start = false;
-				break;
+				return;
 			}
 		}
-		if (all_ok_to_start) {
-			state_ = State::FirstIteration;
-			start_timestamp_ = millis();
-			start_progress_ = 0;
-		}
+
+		state_ = State::FirstIteration;
+		start_timestamp_ = millis();
+		start_progress_ = 0;
 	}
 
 

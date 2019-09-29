@@ -38,14 +38,14 @@ void VescComm::requestStats() {
 
 void VescComm::setCurrent(float current) {
 	uint8_t request[] = { (uint8_t)COMM_PACKET_ID::COMM_SET_CURRENT, 0, 0, 0, 0};
-	int32_t send_index;
+	int32_t send_index = 1;
 	buffer_append_float32(request, current, 1000.0, &send_index);
 	sendRequest(request , sizeof(request));
 }
 
 void VescComm::setCurrentBrake(float current) {
 	uint8_t request[] = { (uint8_t)COMM_PACKET_ID::COMM_SET_CURRENT_BRAKE, 0, 0, 0, 0};
-	int32_t send_index;
+	int32_t send_index = 1;
 	buffer_append_float32(request, current, 1000.0, &send_index);
 	sendRequest(request , sizeof(request));
 }

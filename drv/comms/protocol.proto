@@ -128,7 +128,7 @@ message Config {
     optional float erpm_rc = 11 [ default = 0.05 ];
 
     // Get pushback/beep if voltage drops below this threshold
-    optional float low_volt_threshold = 12 [ default = 0.75 ];
+    optional float low_volt_threshold = 12 [ default = 45 ];
     optional float volt_rc = 13 [ default = 0.05 ];
 
     // add current erpm to throttle input with 'speed_input_mixin' weight

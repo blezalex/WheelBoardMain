@@ -49,7 +49,7 @@ public:
 			stopped_since_ts_ = millis();
 		}
 		else {
-			if (millis() - stopped_since_ts_ > 200) {
+			if (millis() - stopped_since_ts_ > 200u) {
 				brakes_on_ = true;
 			}
 		}
@@ -68,6 +68,7 @@ public:
 			break;
 
 		case State::FirstIteration:
+			brakes_on_ = false;
 			balancer_.reset();
 			motor_out_lpf_.reset(NEUTRAL_MOTOR_CMD);
 			prev_out_ = NEUTRAL_MOTOR_CMD;
@@ -98,12 +99,14 @@ public:
 	}
 
 	bool shouldWarn(float current_throttle) {
-		float smoothed_throttle = avg_running_motor_out_.compute(current_throttle);
+		float smoothed_throttle = avg_running_motor_out_.compute(current_throttle - NEUTRAL_MOTOR_CMD);
 
-		bool warning_requested = abs(smoothed_throttle) >= MOTOR_CMD_RANGE * settings_->misc.throttle_threshold;
+		bool warning_requested = false;
+		warning_requested |= abs(smoothed_throttle) >= (MOTOR_CMD_RANGE * settings_->misc.throttle_threshold);
 		warning_requested |= fabs(vesc_->mc_values_.duty_smoothed) > settings_->misc.duty_threshold;
 		warning_requested |= abs(vesc_->mc_values_.erpm_smoothed) > settings_->misc.erpm_threshold;
 		warning_requested |= vesc_->mc_values_.v_in_smoothed < settings_->misc.low_volt_threshold;
+		return warning_requested;
 	}
 
 	void updateBalancingSetPoint(bool shouldPushback, bool forward) {
@@ -148,7 +151,7 @@ public:
 				vesc_->setCurrentBrake(20);
 			}
 			else {
-				vesc_->setCurrent(fmap(ppm_val, -MOTOR_CMD_RANGE, MOTOR_CMD_RANGE, -usart_scaling, usart_scaling));
+				vesc_->setCurrent(fmap(ppm_val, MIN_MOTOR_CMD, MAX_MOTOR_CMD, -usart_scaling, usart_scaling));
 			}
 		}
 		else {
@@ -164,6 +167,7 @@ private:
 	PwmOut& ppm_motor_out_;
 	GenericOut& status_led_;
 	GenericOut& beeper_;
+	// avg value for zero-center motor out. range [-MOTOR_CMD_RANGE:MOTOR_CMD_RANGE]
 	LPF avg_running_motor_out_;
 	uint16_t prev_out_;
 	GenericOut& green_led_;

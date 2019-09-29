@@ -6,7 +6,7 @@
 class GenericOut {
 public:
 	GenericOut(uint32_t RCC_APB2Periph, GPIO_TypeDef* port, uint16_t pin, bool inverted);
-	void init();
+	void init(bool open_drain = false);
 	bool getState();
 	void setState(bool enabled);
 	void toggle();

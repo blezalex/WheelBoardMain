@@ -148,6 +148,8 @@ int main(void)
 	accGyro.setListener(&waiter);
 	accGyro.init(cfg.balance_settings.global_gyro_lpf);
 
+	GenericOut beeper(RCC_APB2Periph_GPIOA, GPIOA, GPIO_Pin_12, true);
+	beeper.init(true);
 
 	led_controller_init();
 	waiter.waitForAccGyroCalibration();
@@ -157,8 +159,7 @@ int main(void)
 	GenericOut green_led(RCC_APB2Periph_GPIOB, GPIOB, GPIO_Pin_3, true);
 	green_led.init();
 
-	GenericOut beeper(RCC_APB2Periph_GPIOA, GPIOA, GPIO_Pin_12, true);
-	beeper.init();
+
 
 //	GenericOut debug_out(RCC_APB2Periph_GPIOA, GPIOA, GPIO_Pin_11, false);
 //	debug_out.init();
@@ -336,7 +337,7 @@ int main(void)
     		vesc.mc_values_.v_in_smoothed = v_in_lpf.compute(vesc.mc_values_.v_in);
 
     		static LPF duty_lpf(&cfg.misc.duty_rc);
-    		vesc.mc_values_.duty_smoothed = vesc.mc_values_.duty_smoothed;
+    		vesc.mc_values_.duty_smoothed = vesc.mc_values_.duty_now;
     	}
     }
 }
