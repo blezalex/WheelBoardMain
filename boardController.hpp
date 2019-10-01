@@ -49,7 +49,7 @@ public:
 			stopped_since_ts_ = millis();
 		}
 		else {
-			if (millis() - stopped_since_ts_ > 200u) {
+			if (millis() - stopped_since_ts_ > 400u) {
 				brakes_on_ = true;
 			}
 		}
