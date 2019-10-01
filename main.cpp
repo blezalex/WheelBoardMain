@@ -169,7 +169,9 @@ int main(void)
 	int guards_count = sizeof(guards) / sizeof(Guard*);
 
 	VescComm vesc(&Serial2);
-
+    LPF erpm_lpf(&cfg.misc.erpm_rc);
+    LPF v_in_lpf(&cfg.misc.volt_rc);
+    LPF duty_lpf(&cfg.misc.duty_rc);
 
 	BoardController main_ctrl(&cfg, imu, motor_out, status_led, beeper, guards, guards_count, green_led, &vesc);
 
@@ -180,8 +182,6 @@ int main(void)
 
 	Communicator comms(&Serial1);
 	uint16_t last_check_time = 0;
-
-
 
 	write_pos = 0;
 	read_pos = 0;
@@ -330,14 +330,10 @@ int main(void)
     	}
     	if (vesc.update() == (uint8_t)VescComm::COMM_PACKET_ID::COMM_GET_VALUES) {
     		// got a stats update; recalculate smoothed values
-    		static LPF erpm_lpf(&cfg.misc.erpm_rc);
+
     		vesc.mc_values_.erpm_smoothed = erpm_lpf.compute(vesc.mc_values_.rpm);
-
-    		static LPF v_in_lpf(&cfg.misc.volt_rc);
     		vesc.mc_values_.v_in_smoothed = v_in_lpf.compute(vesc.mc_values_.v_in);
-
-    		static LPF duty_lpf(&cfg.misc.duty_rc);
-    		vesc.mc_values_.duty_smoothed = vesc.mc_values_.duty_now;
+    		vesc.mc_values_.duty_smoothed = duty_lpf.compute(vesc.mc_values_.duty_now);
     	}
     }
 }

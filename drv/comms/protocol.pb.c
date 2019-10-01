@@ -44,11 +44,11 @@ const int32_t Config_Misc_log_type_default = 0;
 const float Config_Misc_throttle_threshold_default = 0.75;
 const float Config_Misc_throttle_rc_default = 0.05;
 const float Config_Misc_duty_threshold_default = 0.75;
-const float Config_Misc_duty_rc_default = 0.05;
+const float Config_Misc_duty_rc_default = 0.25;
 const int32_t Config_Misc_erpm_threshold_default = 6000;
-const float Config_Misc_erpm_rc_default = 0.05;
+const float Config_Misc_erpm_rc_default = 0.25;
 const float Config_Misc_low_volt_threshold_default = 0.75;
-const float Config_Misc_volt_rc_default = 0.05;
+const float Config_Misc_volt_rc_default = 0.25;
 const float Config_Misc_speed_input_mixin_default = 0;
 
 

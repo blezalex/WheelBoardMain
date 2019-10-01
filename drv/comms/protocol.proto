@@ -121,15 +121,15 @@ message Config {
 
     // Get pushback/beep if duty_cycle exceeds this threshold
     optional float duty_threshold = 8 [ default = 0.75 ];
-    optional float duty_rc = 9 [ default = 0.05 ];
+    optional float duty_rc = 9 [ default = 0.25 ];
 
     // Get pushback/beep if erpm exceeds this threshold
     optional int32 erpm_threshold = 10 [ default = 6000 ];
-    optional float erpm_rc = 11 [ default = 0.05 ];
+    optional float erpm_rc = 11 [ default = 0.25 ];
 
     // Get pushback/beep if voltage drops below this threshold
     optional float low_volt_threshold = 12 [ default = 45 ];
-    optional float volt_rc = 13 [ default = 0.05 ];
+    optional float volt_rc = 13 [ default = 0.25 ];
 
     // add current erpm to throttle input with 'speed_input_mixin' weight
     optional float speed_input_mixin = 14 [ default = 0 ];
