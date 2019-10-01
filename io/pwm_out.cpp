@@ -19,7 +19,7 @@ void PwmOut::init(uint16_t val) {
 	TIM_TimeBaseStructInit(&TimerBaseInit);
 
 	TimerBaseInit.TIM_Prescaler =  SystemCoreClock / 1000000 - 1; // 1us tick ;
-	TimerBaseInit.TIM_Period = 3300; // 300hz
+	TimerBaseInit.TIM_Period = 2500; // 400hz
 	TimerBaseInit.TIM_CounterMode = TIM_CounterMode_Up;
 	TimerBaseInit.TIM_ClockDivision = TIM_CKD_DIV1;
 	TIM_TimeBaseInit(TIM1,&TimerBaseInit);
