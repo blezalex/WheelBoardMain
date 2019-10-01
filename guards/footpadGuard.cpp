@@ -61,6 +61,13 @@ void FootpadGuard::Update() {
 		padLevelFilter[0].compute(ADC1_Buffer[0]);
 		padLevelFilter[1].compute(ADC1_Buffer[1]);
 	}
+
+	if (!seen_booth_off) {
+		// check if both off now
+		if (padLevelFilter[0].getVal() < settings_->min_level_to_continue && padLevelFilter[1].getVal() < settings_->min_level_to_continue) {
+			seen_booth_off = true;
+		}
+	}
 }
 
 FootpadGuard::FootpadGuard(const Config_FootPadSettings* settings)
@@ -70,15 +77,8 @@ FootpadGuard::FootpadGuard(const Config_FootPadSettings* settings)
 
 bool FootpadGuard::CanStart() {
 	if (!seen_booth_off) {
-
-		// check if both off now
-		if (padLevelFilter[0].getVal() < settings_->min_level_to_continue && padLevelFilter[1].getVal() < settings_->min_level_to_continue) {
-			seen_booth_off = true;
-		}
-		else {
-			// sensor failure or still pressed since start.
-			return false;
-		}
+		// sensor failure or still pressed since start.
+		return false;
 	}
 	return padLevelFilter[0].getVal() > settings_->min_level_to_start && padLevelFilter[1].getVal() > settings_->min_level_to_start;
 }
