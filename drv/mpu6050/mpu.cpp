@@ -130,7 +130,7 @@ inline void applyZeroOffset(int16_t* data, int16_t* offsets) {
 }
 
 inline int16_t getAccVal(uint8_t* rawData, uint8_t axis) {
-	return ((int16_t)((rawData[axis*2]<<8) | rawData[axis*2 + 1]))>>3;
+	return ((int16_t)((rawData[axis*2]<<8) | rawData[axis*2 + 1]))>>2;
 }
 
 void Mpu::handleAccData(int16_t* acc, int16_t* gyro, uint8_t* rawData) {
@@ -215,7 +215,7 @@ void Mpu::init(uint8_t lpfSettings) {
 	i2c_writeReg(MPU6050_ADDRESS, MPU6050_SMPLRT_DIV, 0);
 	i2c_writeReg(MPU6050_ADDRESS, MPU6050_CONFIG, lpfSettings);
 	i2c_writeReg(MPU6050_ADDRESS, MPU6050_GYRO_CONFIG, MPU6050_GYRO_FS_500);
-	i2c_writeReg(MPU6050_ADDRESS, MPU6050_ACCEL_CONFIG, MPU6050_ACCEL_FS_8);
+	i2c_writeReg(MPU6050_ADDRESS, MPU6050_ACCEL_CONFIG, MPU6050_ACCEL_FS_4);
 	i2c_writeReg(MPU6050_ADDRESS, MPU6050_INT_PIN_CFG, 1<<4);
 	i2c_writeReg(MPU6050_ADDRESS, MPU6050_INT_ENABLE, 1);
 

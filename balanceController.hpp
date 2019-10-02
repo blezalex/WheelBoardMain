@@ -39,7 +39,7 @@ public:
 	// but not limited here to that range.
 	float compute(const int16_t* gyro_update, float* angles, float balance_angle) {
 		float avg_gyro_upd = constrain(gyro_update[ANGLE_DRIVE] * kGyroMultiplier, -settings_->balance_settings.balance_d_param_limiter, settings_->balance_settings.balance_d_param_limiter);
-		avg_gyro_upd = (int32_t) d_lpf_.compute(avg_gyro_upd);
+		avg_gyro_upd = d_lpf_.compute(avg_gyro_upd);
 		return balance_pid_.compute(getPInput(angles, balance_angle), avg_gyro_upd, getPIInput(angles, balance_angle));
 	}
 
