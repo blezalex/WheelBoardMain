@@ -10,7 +10,7 @@
 #define fsin(angle) (angle)
 
 
-#define GYRO_SCALE (4 / 16.4 * PI / 180.0 / 1000000.0)   //MPU6050 and MPU3050   16.4 LSB/(deg/s) and we ignore the last 2 bits
+#define GYRO_SCALE (4 / 65.5 * PI / 180.0 / 1000000.0)   //MPU6050 and MPU3050   16.4 LSB/(deg/s) and we ignore the last 2 bits
 
 #define compFilterAccWeight 0.0004
 #define compFilterAccWeightCalib 0.005
@@ -23,7 +23,7 @@
 void IMU::compute(const MpuUpdate& update, bool init) {
 //	GPIOA->BSRR = GPIO_Pin_11;
 
-	const float MW_GYRO_SCALE = (4 / 16.4);   //MPU6050 and MPU3050   16.4 LSB/(deg/s) and we ignore the last 2 bits
+	const float MW_GYRO_SCALE = (4 / 65.5);   //MPU6050 and MPU3050   65.5 LSB/(deg/s) and we ignore the last 2 bits
 	if (init) {
 		// While gyro is getting initialized its data is invalid - ignore gyro.
 		// Take all data from ACC with much higher weight - assuming board is stationary (otherwise gyro would not calibrate)

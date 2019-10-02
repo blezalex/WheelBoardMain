@@ -38,7 +38,7 @@ public:
 	// Returns torque request based on current imu and gyro readings. Expected range is -MOTOR_CMD_RANGE:MOTOR_CMD_RANGE,
 	// but not limited here to that range.
 	float compute(const int16_t* gyro_update, float* angles, float balance_angle) {
-		int32_t avg_gyro_upd = constrain(gyro_update[ANGLE_DRIVE], -settings_->balance_settings.balance_d_param_limiter, settings_->balance_settings.balance_d_param_limiter);
+		float avg_gyro_upd = constrain(gyro_update[ANGLE_DRIVE] * kGyroMultiplier, -settings_->balance_settings.balance_d_param_limiter, settings_->balance_settings.balance_d_param_limiter);
 		avg_gyro_upd = (int32_t) d_lpf_.compute(avg_gyro_upd);
 		return balance_pid_.compute(getPInput(angles, balance_angle), avg_gyro_upd, getPIInput(angles, balance_angle));
 	}
@@ -54,7 +54,7 @@ public:
 		if (pid_D_multiplier > max_D_multiplier_so_far_)
 			max_D_multiplier_so_far_ = pid_D_multiplier;
 
-		int16_t pid_out = balance_pid_.compute(getPInput(angles, 0) * pid_P_multiplier, gyro_update[ANGLE_DRIVE] * max_D_multiplier_so_far_, getPIInput(angles, 0));
+		int16_t pid_out = balance_pid_.compute(getPInput(angles, 0) * pid_P_multiplier, gyro_update[ANGLE_DRIVE] * max_D_multiplier_so_far_ * kGyroMultiplier, getPIInput(angles, 0));
 		return constrain(pid_out, -START_MAX_POWER, START_MAX_POWER);
 	}
 
@@ -63,4 +63,5 @@ private:
 	float max_D_multiplier_so_far_ = 0;
 	LPF d_lpf_;
 	PidController balance_pid_;
+	static constexpr float kGyroMultiplier = 1/4.0;
 };

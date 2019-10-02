@@ -151,7 +151,7 @@ void Mpu::handleAccData(int16_t* acc, int16_t* gyro, uint8_t* rawData) {
 }
 
 inline int16_t getGyroVal(uint8_t* rawData, uint8_t axis) {
-	return ((int16_t)((rawData[axis * 2] << 8) | rawData[axis * 2 + 1])) >> 2;  // range: +/- 8192; +/- 2000 deg/sec
+	return ((int16_t)((rawData[axis * 2] << 8) | rawData[axis * 2 + 1])) >> 2;  // range: +/- 8192; +/- 500 deg/sec
 }
 
 void Mpu::handleGyroData(int16_t* gyro,  uint8_t* rawData) {
@@ -214,7 +214,7 @@ void Mpu::init(uint8_t lpfSettings) {
 	i2c_writeReg(MPU6050_ADDRESS, MPU6050_PWR_MGMT_1, MPU6050_CLOCK_PLL_ZGYRO);
 	i2c_writeReg(MPU6050_ADDRESS, MPU6050_SMPLRT_DIV, 0);
 	i2c_writeReg(MPU6050_ADDRESS, MPU6050_CONFIG, lpfSettings);
-	i2c_writeReg(MPU6050_ADDRESS, MPU6050_GYRO_CONFIG, MPU6050_GYRO_FS_2000);
+	i2c_writeReg(MPU6050_ADDRESS, MPU6050_GYRO_CONFIG, MPU6050_GYRO_FS_500);
 	i2c_writeReg(MPU6050_ADDRESS, MPU6050_ACCEL_CONFIG, MPU6050_ACCEL_FS_8);
 	i2c_writeReg(MPU6050_ADDRESS, MPU6050_INT_PIN_CFG, 1<<4);
 	i2c_writeReg(MPU6050_ADDRESS, MPU6050_INT_ENABLE, 1);
