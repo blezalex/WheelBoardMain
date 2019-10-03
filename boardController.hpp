@@ -4,8 +4,11 @@
 #include "global.h"
 #include "pid.hpp"
 #include "imu/imu.hpp"
+#include "stateTracker.hpp"
 #include "lpf.hpp"
 #include "drv/vesc/vesc.hpp"
+#include "io/genericOut.hpp"
+#include "io/pwm_out.hpp"
 
 
 class BoardController  : public UpdateListener  {
