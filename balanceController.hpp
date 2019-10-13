@@ -6,6 +6,28 @@
 #include "lpf.hpp"
 
 
+class Flotator {
+public:
+  Flotator() { reset(); }
+
+  void reset() {
+    smoothed_out_ = 0;
+    prev_value_ = 0;
+  }
+
+  float compute(float input, float scaler, float reconciler) {
+    float diff = input - prev_value_;
+    prev_value_ = input;
+
+    smoothed_out_ += diff * scaler;
+    smoothed_out_ = smoothed_out_ * (1 - reconciler) + input * reconciler;
+    return smoothed_out_;
+  }
+
+private:
+  float prev_value_;
+  float smoothed_out_;
+};
 
 class BalanceController  {
 public:
@@ -18,10 +40,16 @@ public:
 		balance_pid_.reset();
 		d_lpf_.reset();
 		max_D_multiplier_so_far_ = 0;
+		floatator_.reset();
 	}
 
 	float getPIInput(float* angles, float balance_angle) {
-		float raw_input = (balance_angle - angles[ANGLE_DRIVE]) / settings_->balance_settings.balance_angle_scaling;
+
+		float smootheed_angle = angles[ANGLE_DRIVE];
+		if (settings_->floating.p_scaler < 1) {
+			smootheed_angle = floatator_.compute(angles[ANGLE_DRIVE], settings_->floating.p_scaler, settings_->floating.p_reconcile_rate);
+		}
+		float raw_input = (balance_angle - smootheed_angle) / settings_->balance_settings.balance_angle_scaling;
 		return constrain(raw_input, -1, 1);
 	}
 
@@ -62,6 +90,7 @@ public:
 private:
 	const Config* settings_;
 	float max_D_multiplier_so_far_ = 0;
+	Flotator floatator_;
 	LPF d_lpf_;
 	PidController balance_pid_;
 	static constexpr float kGyroMultiplier = 1/4.0;

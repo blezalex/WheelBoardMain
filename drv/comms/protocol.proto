@@ -110,7 +110,7 @@ message Config {
     required float push_raise_speed_deg_sec = 3 [ default = 0.5 ];
     required float push_release_speed_deg_sec = 4 [ default = 0.2 ];
   }
-
+  
   message Misc {
     // 0 - no log, 1 - log angle, 2 - log output
     optional int32 log_type = 1 [ default = 0 ];
@@ -134,9 +134,16 @@ message Config {
     // add current erpm to throttle input with 'speed_input_mixin' weight
     optional float speed_input_mixin = 14 [ default = 0 ];
   }
-
+  
+  message FloatSettings  {
+  	required float p_scaler = 1 [ default = 1 ];
+  	required float p_reconcile_rate = 2 [ default = 0.001 ];
+  }
+  
   required Misc misc = 5;
   optional PusbackSettings  pushback = 6;
+  
+  optional FloatSettings floating = 7;
 }
 
 message Stats {
