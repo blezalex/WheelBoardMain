@@ -10,6 +10,7 @@
 #include "io/genericOut.hpp"
 #include "io/pwm_out.hpp"
 
+#define BRAKE_VIA_USART
 
 class BoardController  : public UpdateListener  {
 public:
@@ -159,6 +160,12 @@ public:
 		}
 		else {
 			ppm_motor_out_.set(ppm_val);
+
+#ifdef BRAKE_VIA_USART
+			if (ppm_val == BRAKE_MOTOR_CMD) {
+				vesc_->setCurrentBrake(20);
+			}
+#endif
 		}
 	}
 

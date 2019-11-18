@@ -306,6 +306,8 @@ int main(void) {
 
     if (vesc.update() == (uint8_t)VescComm::COMM_PACKET_ID::COMM_GET_VALUES) {
       // got a stats update; recalculate smoothed values
+      // Runs at 20hz (values requested from balance controller to sync with
+      // current control over USART request.
       vesc.mc_values_.erpm_smoothed = erpm_lpf.compute(vesc.mc_values_.rpm);
       vesc.mc_values_.v_in_smoothed = v_in_lpf.compute(vesc.mc_values_.v_in);
       vesc.mc_values_.duty_smoothed =
