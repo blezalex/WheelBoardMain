@@ -91,7 +91,7 @@ private:
 	const Config* settings_;
 	float max_D_multiplier_so_far_ = 0;
 	Flotator floatator_;
-	LPF d_lpf_;
+	BiQuadLpf d_lpf_;
 	PidController balance_pid_;
 	static constexpr float kGyroMultiplier = 1/4.0;
 };

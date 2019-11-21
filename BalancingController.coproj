@@ -128,8 +128,8 @@
     <File name="drv/vesc/vesc.hpp" path="drv/vesc/vesc.hpp" type="1"/>
     <File name="ledController.hpp" path="ledController.hpp" type="1"/>
     <File name="stm_lib/src/stm32f10x_dma.c" path="stm_lib/src/stm32f10x_dma.c" type="1"/>
-    <File name="stm_lib/src" path="" type="2"/>
     <File name="proto" path="" type="2"/>
+    <File name="stm_lib/src" path="" type="2"/>
     <File name="cmsis" path="" type="2"/>
     <File name="stm_lib" path="" type="2"/>
     <File name="stm_lib/inc/stm32f10x_exti.h" path="stm_lib/inc/stm32f10x_exti.h" type="1"/>
@@ -160,10 +160,11 @@
     <File name="global.h" path="global.h" type="1"/>
     <File name="guards/guard.hpp" path="guards/guard.hpp" type="1"/>
     <File name="io/usart.hpp" path="io/usart.hpp" type="1"/>
-    <File name="drv" path="" type="2"/>
     <File name="drv/settings/settings.cpp" path="drv/settings/settings.cpp" type="1"/>
+    <File name="drv" path="" type="2"/>
     <File name="stm_lib/src/stm32f10x_usart.c" path="stm_lib/src/stm32f10x_usart.c" type="1"/>
     <File name="guards/angleGuard.hpp" path="guards/angleGuard.hpp" type="1"/>
+    <File name="lpf.cpp" path="lpf.cpp" type="1"/>
     <File name="drv/comms" path="" type="2"/>
     <File name="stm_lib/inc/stm32f10x_gpio.h" path="stm_lib/inc/stm32f10x_gpio.h" type="1"/>
     <File name="drv/settings" path="" type="2"/>
@@ -181,8 +182,8 @@
     <File name="stm_lib/inc/stm32f10x_rcc.h" path="stm_lib/inc/stm32f10x_rcc.h" type="1"/>
     <File name="stm_lib/inc/stm32f10x_i2c.h" path="stm_lib/inc/stm32f10x_i2c.h" type="1"/>
     <File name="syscalls" path="" type="2"/>
-    <File name="io/pwm_out.hpp" path="io/pwm_out.hpp" type="1"/>
     <File name="pid.hpp" path="pid.hpp" type="1"/>
+    <File name="io/pwm_out.hpp" path="io/pwm_out.hpp" type="1"/>
     <File name="proto/pb_encode.c" path="../nanopb-0.3.9.2-windows-x86/pb_encode.c" type="1"/>
     <File name="drv/settings/settings.hpp" path="drv/settings/settings.hpp" type="1"/>
     <File name="stm_lib/inc" path="" type="2"/>

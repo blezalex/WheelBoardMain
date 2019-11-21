@@ -181,7 +181,7 @@ private:
 	LPF avg_running_motor_out_;
 	uint16_t prev_out_;
 	GenericOut& green_led_;
-	LPF motor_out_lpf_;
+	BiQuadLpf motor_out_lpf_;
 	uint16_t stopped_since_ts_;
 	bool brakes_on_ = false;
 	bool first_stopped_to_brake_iteration_ = true;
