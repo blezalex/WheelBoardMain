@@ -32,7 +32,7 @@ LedState led_state;
 
 
 void led_controller_set_state(float speed, float tilt) {
-	led_state.braking = (fabs(speed)  < fabs(led_state.prev_speed) * 0.95); // if speed reduced by 5% or more
+	led_state.braking = (fabsf(speed)  < fabsf(led_state.prev_speed) * 0.95); // if speed reduced by 5% or more
 
 	if (abs(speed) < STOPPED_SPEED) {
 		led_state.drive_state = DriveState::Stopped;
@@ -61,7 +61,7 @@ void led_controller_update() {
 	static uint16_t prev_time = 0;
 
 	uint16_t time = millis();
-	if (time - prev_time < 50u) {
+	if (time - prev_time < 100u) {
 		return;
 	}
 
