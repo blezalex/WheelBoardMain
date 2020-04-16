@@ -13,7 +13,7 @@
 // IMU is using right hand coordinate system, it tracks gravity vector and calculates angle between gravity vector and the board frame.
 // Normal orientation - X forward, Y right Z down
 
-#define BOARD_ROTATION_MACRO BOARD_ROTATION_UPSIDE_DOWN_X
+//#define BOARD_ROTATION_MACRO BOARD_ROTATION_UPSIDE_DOWN_X
 
 #define BOARD_ROTATION_UPSIDE_DOWN_X(XYZ) XYZ[1]*=-1; XYZ[2]*=-1;  // rotated 180 deg around X axis
 
@@ -31,7 +31,7 @@
 #define NEUTRAL_MOTOR_CMD 1500
 
 // Configure brake current on invalid pulse with 100ms timeout
-#define BRAKE_MOTOR_CMD 0
+#define BRAKE_MOTOR_CMD -2
 
 #define MOTOR_CMD_RANGE (MAX_MOTOR_CMD - NEUTRAL_MOTOR_CMD)
 
@@ -47,16 +47,16 @@
 //inline int sgn(float val) { return (0 < val) - (val < 0); }
 inline int sgn(float val) { return val >= 0 ? 1 : -1; } // returns 1 for 0 and up, -1 for less than zero.
 
-inline float applyExpoReal(float x, float k) { return sgn(x) * powf(fabs(x), 1+k); }
+inline float applyExpoReal(float x, float k) { return sgn(x) * powf(fabsf(x), 1+k); }
 
 constexpr float E =  2.71828;
 
 inline float applyExpoNatural(float x, float k) {
-	float absx = fabs(x);
+	float absx = fabsf(x);
 	return sgn(x) * (powf(E, k*absx) - 1) / (powf(E, k) - 1) ;
 }
 
 inline float applyExpoPoly(float x, float k) {
-	float absx = fabs(x);
+	float absx = fabsf(x);
 	return sgn(x) * absx/(1+k*(1-absx));
 }

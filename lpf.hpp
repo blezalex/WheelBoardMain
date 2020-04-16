@@ -39,15 +39,14 @@ float biquad_compute(float in, float params[5], float state[4]);
 
 class BiQuadLpf {
 public:
-	BiQuadLpf(const float* frequency_ptr) :legacy_(frequency_ptr) { }
+	BiQuadLpf(const float* frequency_ptr)
+		: frequency_ptr_(frequency_ptr) { }
 
 	void reset() {
 		reset(0);
 	}
 
 	void reset(float value) {
-		legacy_.reset(value);
-
 		for (int i = 0; i < 4; i++) {
 			bw_state_[i] = value;
 		}
@@ -55,15 +54,10 @@ public:
 
 	float compute(float value)
 	{
-		const bool use_biguad = *legacy_._rc > 1;
-		if (!use_biguad) {
-			return prev_value_ = legacy_.compute(value);
-		}
-
-		const bool params_changed = prev_rc_ != *legacy_._rc;
+		const bool params_changed = prev_rc_ != *frequency_ptr_;
 		if (params_changed) {
-			biquad_butterworth_init(*legacy_._rc, 1000, bw_params_);
-			prev_rc_ = *legacy_._rc;
+			prev_rc_ = *frequency_ptr_;
+			biquad_butterworth_init(prev_rc_, 1000, bw_params_);
 		}
 
 		return prev_value_ = biquad_compute(value, bw_params_, bw_state_);
@@ -74,9 +68,9 @@ public:
 
 private:
 	float prev_rc_ = -1;
+	const float* frequency_ptr_;
 	float bw_params_[5];
 	float bw_state_[4];
 
-	LPF legacy_;
 	float prev_value_;
 };

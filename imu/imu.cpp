@@ -94,7 +94,7 @@ void IMU::compute(const MpuUpdate& update, bool init) {
   float currRatio = atan2(accCompensatedVector_[1], accCompensatedVector_[2]);
   float accRatio = atan2(update.acc[1], update.acc[2]);
 
-  if (sumAccSq > sq(ACC_1G * (1 - GRAVITY_TOLERANCE)) && sumAccSq < sq(ACC_1G * (1 + GRAVITY_TOLERANCE)) && fabs(currRatio - accRatio) < 0.5) {
+  if (sumAccSq > sq(ACC_1G * (1 - GRAVITY_TOLERANCE)) && sumAccSq < sq(ACC_1G * (1 + GRAVITY_TOLERANCE)) && fabsf(currRatio - accRatio) < 0.5) {
       for (int i = 0; i < 3; i++) {
           accCompensatedVector_[i] = (1 - compFilterAccWeight) * accCompensatedVector_[i] + compFilterAccWeight * update.acc[i];
       }                        

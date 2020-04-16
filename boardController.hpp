@@ -29,10 +29,10 @@ public:
 		vesc_(vesc) {
 	}
 
-	float mapOutToPwm(float balancer_out) {
-		float out = constrain(balancer_out + NEUTRAL_MOTOR_CMD, MIN_MOTOR_CMD, MAX_MOTOR_CMD);
-		int32_t max_update = settings_->balance_settings.max_update_limiter;
-		float new_out = constrain(out, prev_out_ - max_update, prev_out_ + max_update);
+	float filterMotorCommand(float cmd) {
+		cmd = constrain(cmd, -1.0f, 1.0f);
+		float max_update = settings_->balance_settings.max_update_limiter / 512.0f;
+		float new_out = constrain(cmd, prev_out_ - max_update, prev_out_ + max_update);
 		new_out = motor_out_lpf_.compute(new_out);
 
 		prev_out_ = new_out;
@@ -47,13 +47,13 @@ public:
 			return;
 		}
 
-		setMotorOutput(NEUTRAL_MOTOR_CMD);
+		setMotorOutput(0);
 		if (first_stopped_to_brake_iteration_) {
 			first_stopped_to_brake_iteration_ = false;
 			stopped_since_ts_ = millis();
 		}
 		else {
-			if (millis() - stopped_since_ts_ > 400u) {
+			if (millis() - stopped_since_ts_ > 1000u) {
 				brakes_on_ = true;
 			}
 		}
@@ -74,19 +74,20 @@ public:
 		case State::FirstIteration:
 			brakes_on_ = false;
 			balancer_.reset();
-			motor_out_lpf_.reset(NEUTRAL_MOTOR_CMD);
-			prev_out_ = NEUTRAL_MOTOR_CMD;
+			motor_out_lpf_.reset(0);
+			prev_out_ = 0;
 			avg_running_motor_out_.reset();
 			status_led_.setState(1);
 			// intentional fall through
 		case State::Starting:
-			setMotorOutput(mapOutToPwm(balancer_.computeStarting(update.gyro, (float*)imu_.angles, state_.start_progress())));
+			setMotorOutput(filterMotorCommand(balancer_.computeStarting(update.gyro, (float*)imu_.angles, state_.start_progress())));
 			break;
 
 		case State::Running:
-			float out = balancer_.compute(update.gyro, (float*)imu_.angles, balance_angle_) + vesc_->mc_values_.erpm_smoothed * settings_->misc.speed_input_mixin;
-			out = mapOutToPwm(out);
-			setMotorOutput(out);
+			float out = balancer_.compute(update.gyro, (float*)imu_.angles, balance_angle_)
+				+ vesc_->mc_values_.erpm_smoothed * settings_->misc.speed_input_mixin * 0.002f; // 0.002 to keep old config value. TODO: update cfg and get rid of multiplier
+
+			setMotorOutput(filterMotorCommand(out));
 
 			bool warning_requested = shouldWarn(out);
 			beeper_.setState(warning_requested);
@@ -103,11 +104,11 @@ public:
 	}
 
 	bool shouldWarn(float current_throttle) {
-		float smoothed_throttle = avg_running_motor_out_.compute(current_throttle - NEUTRAL_MOTOR_CMD);
+		float smoothed_throttle = avg_running_motor_out_.compute(current_throttle);
 
 		bool warning_requested = false;
-		warning_requested |= abs(smoothed_throttle) >= (MOTOR_CMD_RANGE * settings_->misc.throttle_threshold);
-		warning_requested |= fabs(vesc_->mc_values_.duty_smoothed) > settings_->misc.duty_threshold;
+		warning_requested |= fabsf(smoothed_throttle) >= settings_->misc.throttle_threshold;
+		warning_requested |= fabsf(vesc_->mc_values_.duty_smoothed) > settings_->misc.duty_threshold;
 		warning_requested |= abs(vesc_->mc_values_.erpm_smoothed) > settings_->misc.erpm_threshold;
 		warning_requested |= vesc_->mc_values_.v_in_smoothed < settings_->misc.low_volt_threshold;
 		return warning_requested;
@@ -145,24 +146,24 @@ public:
 		}
 	}
 
-	void setMotorOutput(float ppm_val) {
+	void setMotorOutput(float cmd) {
 		float usart_scaling = settings_->balance_settings.usart_control_scaling;
 		if (fabs(usart_scaling) > 0) {
 			// Using usart for control
 			ppm_motor_out_.set(0);
 
-			if (ppm_val == BRAKE_MOTOR_CMD) {
+			if (cmd == BRAKE_MOTOR_CMD) {
 				vesc_->setCurrentBrake(20);
 			}
 			else {
-				vesc_->setCurrent(fmap(ppm_val, MIN_MOTOR_CMD, MAX_MOTOR_CMD, -usart_scaling, usart_scaling));
+				vesc_->setCurrent(cmd * usart_scaling);
 			}
 		}
 		else {
-			ppm_motor_out_.set(ppm_val);
+			ppm_motor_out_.set(fmap(cmd, -1.0f, 1.0f, MIN_MOTOR_CMD, MAX_MOTOR_CMD));
 
 #ifdef BRAKE_VIA_USART
-			if (ppm_val == BRAKE_MOTOR_CMD) {
+			if (cmd == BRAKE_MOTOR_CMD) {
 				vesc_->setCurrentBrake(20);
 			}
 #endif
@@ -177,9 +178,9 @@ private:
 	PwmOut& ppm_motor_out_;
 	GenericOut& status_led_;
 	GenericOut& beeper_;
-	// avg value for zero-center motor out. range [-MOTOR_CMD_RANGE:MOTOR_CMD_RANGE]
+	// avg value for zero-center motor out. range [-1:1]
 	LPF avg_running_motor_out_;
-	uint16_t prev_out_;
+	float prev_out_;
 	GenericOut& green_led_;
 	BiQuadLpf motor_out_lpf_;
 	uint16_t stopped_since_ts_;

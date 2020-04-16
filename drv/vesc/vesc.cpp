@@ -119,7 +119,7 @@ int VescComm::update() {
 
 			int footer_start_idx = actual_header_size() + expected_msg_len();
 
-			if (crc_payload >> 8 != rx_data_[footer_start_idx] || crc_payload & 0xFF != rx_data_[footer_start_idx + 1]) {
+			if (crc_payload >> 8 != rx_data_[footer_start_idx] || (crc_payload & 0xFF) != rx_data_[footer_start_idx + 1]) {
 				buffer_pos_ = 0;
 				return -1; // Bad CRC
 			}
