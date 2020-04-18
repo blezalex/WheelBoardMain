@@ -7,8 +7,8 @@
 #include "lpf.hpp"
 #include <math.h>
 
-#define STOPPED_SPEED  100 // speed at which board is considered stopped
-#define TURN_INDICATION_MIN_RATE_DEG_SEC 10
+#define STOPPED_SPEED  300 // speed at which board is considered stopped
+#define TURN_INDICATION_MIN_RATE_DEG_SEC 30
 
 enum DriveState {
 	Stopped, // Display battery level?
@@ -66,18 +66,11 @@ void led_controller_update() {
 	static uint16_t prev_time = 0;
 
 	uint16_t time = millis();
-	if (time - prev_time < 100u) {
+	if (time - prev_time < 80u) {
 		return;
 	}
 
 	prev_time = time;
-
-	if (led_state.drive_state == DriveState::Stopped) {
-		for (int i = 0; i < LED_COUNT; i++) {
-			led_set_color(i, 0xdddddd);
-		}
-		return;
-	}
 
 	static int led_idx = 0;
 	if (led_state.turn_state != TurnState::None ) {
@@ -89,17 +82,24 @@ void led_controller_update() {
 		}
 		else {
 			if (led_state.turn_state == TurnState::Left) {
-				led_set_color(led_idx, COLOR_YELLOW);
+				led_set_color(LED_COUNT_SINGLE_SIDE - led_idx - 1, COLOR_YELLOW);
 				led_set_color(LED_COUNT_SINGLE_SIDE + led_idx, COLOR_YELLOW);
 			}
 			else {
-				led_set_color(LED_COUNT_SINGLE_SIDE - led_idx - 1, COLOR_YELLOW);
+				led_set_color(led_idx, COLOR_YELLOW);
 				led_set_color(LED_COUNT_SINGLE_SIDE + LED_COUNT_SINGLE_SIDE - led_idx - 1, COLOR_YELLOW);
 			}
 
 			led_idx++;
 		}
 
+		return;
+	}
+
+	if (led_state.drive_state == DriveState::Stopped) {
+		for (int i = 0; i < LED_COUNT; i++) {
+			led_set_color(i, 0x909090);
+		}
 		return;
 	}
 
@@ -116,6 +116,8 @@ void led_controller_update() {
 
 void led_controller_init() {
 	led_init();
+  rotation_rc = 0.12;
+
+  rotation_lpf = LPF(&rotation_rc);
 	rotation_lpf.reset();
-  rotation_rc = 0.2;
 }
