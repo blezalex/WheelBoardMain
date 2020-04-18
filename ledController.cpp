@@ -4,10 +4,11 @@
 
 #include "drv/led/led.hpp"
 #include "arduino.h"
+#include "lpf.hpp"
 #include <math.h>
 
 #define STOPPED_SPEED  100 // speed at which board is considered stopped
-#define TURN_TILT_ANGLE 3
+#define TURN_INDICATION_MIN_RATE_DEG_SEC 10
 
 enum DriveState {
 	Stopped, // Display battery level?
@@ -30,23 +31,27 @@ struct LedState {
 
 LedState led_state;
 
+float rotation_rc = 0.2;
+LPF rotation_lpf(&rotation_rc);
 
-void led_controller_set_state(float speed, float tilt) {
+
+void led_controller_set_state(float speed, float rotation_rate) {
 	led_state.braking = (fabsf(speed)  < fabsf(led_state.prev_speed) * 0.95); // if speed reduced by 5% or more
 
 	if (abs(speed) < STOPPED_SPEED) {
 		led_state.drive_state = DriveState::Stopped;
 	}
 	else {
-		led_state.drive_state = speed > 0 ? DriveState::Fwd : DriveState::Reverse;
+		led_state.drive_state = speed < 0 ? DriveState::Fwd : DriveState::Reverse;
 	}
 
 	led_state.prev_speed = speed;
 
-	if (tilt > TURN_TILT_ANGLE) {
+	rotation_rate = rotation_lpf.compute(rotation_rate);
+	if (rotation_rate > TURN_INDICATION_MIN_RATE_DEG_SEC) {
 		led_state.turn_state = TurnState::Left;
 	}
-	else if (tilt < -TURN_TILT_ANGLE) {
+	else if (rotation_rate < -TURN_INDICATION_MIN_RATE_DEG_SEC) {
 		led_state.turn_state = TurnState::Rigth;
 	} else {
 		led_state.turn_state = TurnState::None;
@@ -69,7 +74,7 @@ void led_controller_update() {
 
 	if (led_state.drive_state == DriveState::Stopped) {
 		for (int i = 0; i < LED_COUNT; i++) {
-			led_set_color(i, 0xFFFFFF);
+			led_set_color(i, 0xdddddd);
 		}
 		return;
 	}
@@ -111,4 +116,6 @@ void led_controller_update() {
 
 void led_controller_init() {
 	led_init();
+	rotation_lpf.reset();
+  rotation_rc = 0.2;
 }

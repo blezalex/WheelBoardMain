@@ -25,7 +25,7 @@ public:
 		beeper_(beeper),
 		avg_running_motor_out_(&settings->misc.throttle_rc),
 		green_led_(green_led),
-		motor_out_lpf_(&settings->balance_settings.output_lpf_rc),
+		motor_out_lpf_(&settings->balance_settings.output_lpf_hz),
 		vesc_(vesc) {
 	}
 
@@ -53,7 +53,7 @@ public:
 			stopped_since_ts_ = millis();
 		}
 		else {
-			if (millis() - stopped_since_ts_ > 1000u) {
+			if (millis() - stopped_since_ts_ > 600u) {
 				brakes_on_ = true;
 			}
 		}
@@ -80,11 +80,11 @@ public:
 			status_led_.setState(1);
 			// intentional fall through
 		case State::Starting:
-			setMotorOutput(filterMotorCommand(balancer_.computeStarting(update.gyro, (float*)imu_.angles, state_.start_progress())));
+			setMotorOutput(filterMotorCommand(balancer_.computeStarting((float*)imu_.rates, (float*)imu_.angles, state_.start_progress())));
 			break;
 
 		case State::Running:
-			float out = balancer_.compute(update.gyro, (float*)imu_.angles, balance_angle_)
+			float out = balancer_.compute((float*)imu_.rates, (float*)imu_.angles, balance_angle_)
 				+ vesc_->mc_values_.erpm_smoothed * settings_->misc.speed_input_mixin * 0.002f; // 0.002 to keep old config value. TODO: update cfg and get rid of multiplier
 
 			setMotorOutput(filterMotorCommand(out));
@@ -160,14 +160,21 @@ public:
 			}
 		}
 		else {
-			ppm_motor_out_.set(fmap(cmd, -1.0f, 1.0f, MIN_MOTOR_CMD, MAX_MOTOR_CMD));
+			if (cmd == BRAKE_MOTOR_CMD) {
+				ppm_motor_out_.set(0);
 
 #ifdef BRAKE_VIA_USART
-			if (cmd == BRAKE_MOTOR_CMD) {
 				vesc_->setCurrentBrake(20);
-			}
 #endif
+			}
+			else {
+				ppm_motor_out_.set(fmap(cmd, -1.0f, 1.0f, MIN_MOTOR_CMD, MAX_MOTOR_CMD));
+			}
 		}
+	}
+
+	float getLastOut() {
+		return prev_out_;
 	}
 
 private:

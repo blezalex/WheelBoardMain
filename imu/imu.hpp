@@ -23,6 +23,7 @@ public:
 	void compute(const MpuUpdate& update, bool init = false);
 
 	volatile float angles[2];
+	volatile float rates[3];
 private:
 
 #ifdef MADGWICK

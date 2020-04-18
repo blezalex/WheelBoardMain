@@ -187,13 +187,13 @@ int main(void) {
     if ((uint16_t)(millis() - last_check_time) > 100u) {
       last_check_time = millis();
 
-      led_controller_set_state(vesc.mc_values_.rpm, imu.angles[ANGLE_DRIVE]);
+      led_controller_set_state(vesc.mc_values_.rpm, imu.rates[2]);
       switch (cfg.misc.log_type) {
         case 1:
           debug[write_pos++] = (int8_t)imu.angles[ANGLE_DRIVE];
           break;
         case 2:
-          debug[write_pos++] = (int8_t)((motor_out.get() - 1500) / 4);
+          debug[write_pos++] = (int8_t)(main_ctrl.getLastOut() * 127);
           break;
         case 3:
           debug[write_pos++] = (int8_t)(imu.angles[ANGLE_DRIVE] * 10);

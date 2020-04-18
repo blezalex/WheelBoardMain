@@ -32,7 +32,7 @@ private:
 class BalanceController  {
 public:
 	BalanceController(const Config* settings) :
-		settings_(settings), d_lpf_(&settings->balance_settings.balance_d_param_lpf_rc), balance_pid_(&settings->balance_pid) {
+		settings_(settings), d_lpf_(&settings->balance_settings.balance_d_param_lpf_hz), balance_pid_(&settings->balance_pid) {
 		reset();
 	}
 
@@ -66,9 +66,9 @@ public:
 	// Compute torque needed while board in normal mode.
 	// Returns torque request based on current imu and gyro readings. Expected range is [-1:1],
 	// but not constrained to that range.
-	float compute(const int16_t* gyro_update, float* angles, float balance_angle) {
+	float compute(const float* gyro_rates, float* angles, float balance_angle) {
 		float avg_gyro_upd = constrain(
-				gyro_update[ANGLE_DRIVE] * kGyroMultiplier,
+				gyro_rates[ANGLE_DRIVE],
 				-settings_->balance_settings.balance_d_param_limiter,
 				settings_->balance_settings.balance_d_param_limiter);
 
@@ -79,7 +79,7 @@ public:
 	// Compute torque needed while board in starting up phase (coming from one side to balanced state).
 	// Returns torque request based on current imu and gyro readings. Expected range is [-1:1],
 	// but not constrained to that range.
-	float computeStarting(const int16_t* gyro_update, float* angles, float pid_P_multiplier) {
+	float computeStarting(const float* gyro_rates, float* angles, float pid_P_multiplier) {
 		float pid_D_multiplier =  START_D_MAX_MULTIPLIER *
 				min((START_ANGLE_DRIVE - fabsf(angles[ANGLE_DRIVE])) / (START_ANGLE_DRIVE - START_ANGLE_DRIVE_FULL), 1);
 
@@ -89,7 +89,7 @@ public:
 
 		float pid_out = balance_pid_.compute(
 			getPInput(angles, 0) * pid_P_multiplier, 
-			gyro_update[ANGLE_DRIVE] * max_D_multiplier_so_far_ * kGyroMultiplier);
+			gyro_rates[ANGLE_DRIVE] * max_D_multiplier_so_far_);
 
 		return constrain(pid_out, -START_MAX_POWER, START_MAX_POWER);
 	}
@@ -100,5 +100,4 @@ private:
 	Flotator floatator_;
 	BiQuadLpf d_lpf_;
 	PidController balance_pid_;
-	static constexpr float kGyroMultiplier = 1/4.0/512.0; // TODO: update cfg and get rid of multiplier
 };

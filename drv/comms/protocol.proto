@@ -43,10 +43,13 @@ message Config {
   optional Callibration callibration = 1;
 
   message PidConfig {
-    required float p = 1 [ default = 1200 ];
-    required float d = 2 [ default = 0.65 ];
-    required float i = 3 [ default = 0.1 ];
-    required float max_i = 4 [ default = 3 ];
+    // leaning angle from 0 to balance_angle_scaling maps 0 to 100% throttle.
+    // 0-1 = 0-100%
+    required float p = 1 [ default = 1 ];
+    // leaning rate in deg/sec is multiplied by d
+    required float d = 2 [ default = 0.005 ];
+    required float i = 3 [ default = 0.001 ];
+    required float max_i = 4 [ default = 0.006 ];
     optional float i_expo = 13 [ default = 0 ];
   }
 
@@ -73,9 +76,10 @@ message Config {
     required int32 shutoff_angle_drive = 5 [ default = 14 ];
 
     required int32 max_update_limiter = 6 [ default = 300 ];
-    required float output_lpf_rc = 7 [ default = 1 ];
+    required float output_lpf_hz = 7 [ default = 100 ];
 
-    required int32 balance_d_param_limiter = 8 [ default = 300 ];
+	// Max rotation rate for D param is limited to 100 deg/sec by default
+    required int32 balance_d_param_limiter = 8 [ default = 100 ];
 
     // 100hz = 0.385
     // 50hz = 0.24
@@ -84,7 +88,7 @@ message Config {
     // 20hz = 0.11
     // 10hz = 0.06
     // 1hz  = 0.006
-    required float balance_d_param_lpf_rc = 9 [ default = 0.15 ];
+    required float balance_d_param_lpf_hz = 9 [ default = 50 ];
 
     // MPU6050_LPF_256HZ 0, MPU6050_LPF_188HZ 1, MPU6050_LPF_98HZ 2,
     // MPU6050_LPF_42HZ 3, MPU6050_LPF_20HZ 4, MPU6050_LPF_10HZ 5,

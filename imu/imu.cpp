@@ -9,8 +9,8 @@
 #define fcos(angle) (1 - sq(angle)/2)
 #define fsin(angle) (angle)
 
-
-#define GYRO_SCALE (4 / 65.5 * PI / 180.0 / 1000000.0)   //MPU6050 and MPU3050   16.4 LSB/(deg/s) and we ignore the last 2 bits
+#define MW_GYRO_SCALE (4 / 65.5)   //MPU6050 and MPU3050   65.5 LSB/(deg/s) and we ignore the last 2 bits
+#define COMP_GYRO_SCALE_RAD (MW_GYRO_SCALE * PI / 180.0)
 
 #define compFilterAccWeight 0.0004
 #define compFilterAccWeightCalib 0.005
@@ -23,14 +23,17 @@
 void IMU::compute(const MpuUpdate& update, bool init) {
 //	GPIOA->BSRR = GPIO_Pin_11;
 
-	const float MW_GYRO_SCALE = (4 / 65.5);   //MPU6050 and MPU3050   65.5 LSB/(deg/s) and we ignore the last 2 bits
+
 	if (init) {
 		// While gyro is getting initialized its data is invalid - ignore gyro.
 		// Take all data from ACC with much higher weight - assuming board is stationary (otherwise gyro would not calibrate)
 		mw_.updateIMU(0, 0, 0, update.acc[0] / (float)ACC_1G, update.acc[1] / (float)ACC_1G, update.acc[2] / (float)ACC_1G, true);
 	}
 	else {
-		mw_.updateIMU(update.gyro[0] * MW_GYRO_SCALE, update.gyro[1] * MW_GYRO_SCALE, update.gyro[2] * MW_GYRO_SCALE, update.acc[0] / (float)ACC_1G, update.acc[1] / (float)ACC_1G, update.acc[2] / (float)ACC_1G, false);
+		rates[0] = update.gyro[0] * MW_GYRO_SCALE;
+		rates[1] = update.gyro[1] * MW_GYRO_SCALE;
+		rates[2] = update.gyro[2] * MW_GYRO_SCALE;
+		mw_.updateIMU(rates[0], rates[1], rates[2], update.acc[0] / (float)ACC_1G, update.acc[1] / (float)ACC_1G, update.acc[2] / (float)ACC_1G, false);
 	}
 
 	angles[0] = mw_.getRoll() + config_->callibration.x_offset; // TODO: replace with proper vector rotation in MpuUpdate (so pid controler sees rotated gyro input too)
@@ -83,7 +86,7 @@ void IMU::compute(const MpuUpdate& update, bool init) {
 	  return;
 	}
 
-  const float scale =  1000 * GYRO_SCALE; // TODO: use actual time
+  const float scale =  COMP_GYRO_SCALE_RAD / 1000.0; // TODO: use actual time
   RotateVector(accCompensatedVector_, update.gyro[0] * scale, update.gyro[1] * scale, update.gyro[2] * scale);
 
   int32_t sumAccSq = 0;
