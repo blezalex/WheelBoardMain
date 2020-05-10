@@ -65,6 +65,7 @@ class InitWaiter : public UpdateListener {
         last_check_time = millis();
         status_led_->toggle();
       }
+      led_controller_startup_animation();
     }
   }
 

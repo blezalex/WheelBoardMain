@@ -71,7 +71,7 @@ void FootpadGuard::Update() {
 }
 
 FootpadGuard::FootpadGuard(const Config_FootPadSettings* settings)
- : padLevelFilter {&settings_->filter_rc, &settings_->filter_rc}, settings_(settings) {
+ :  settings_(settings), padLevelFilter {&settings->filter_rc, &settings->filter_rc} {
 	initADCs();
 }
 

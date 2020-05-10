@@ -26,7 +26,6 @@
 class Madgwick {
 private:
 	static float invSqrt(float x);
-	float beta;				// algorithm gain
 	float q0;
 	float q1;
 	float q2;
@@ -42,9 +41,9 @@ private:
 	//-------------------------------------------------------------------------------------------
 	// Function declarations
 public:
-	Madgwick(const float* beta_ptr);
+	Madgwick();
 	void begin(float sampleFrequency) { invSampleFreq = 1.0f / sampleFrequency; }
-	void updateIMU(float gx, float gy, float gz, float ax, float ay, float az,  bool init);
+	void updateIMU(float gx, float gy, float gz, float ax, float ay, float az,  float beta);
 	//float getPitch(){return atan2f(2.0f * q2 * q3 - 2.0f * q0 * q1, 2.0f * q0 * q0 + 2.0f * q3 * q3 - 1.0f);};
 	//float getRoll(){return -1.0f * asinf(2.0f * q1 * q3 + 2.0f * q0 * q2);};
 	//float getYaw(){return atan2f(2.0f * q1 * q2 - 2.0f * q0 * q3, 2.0f * q0 * q0 + 2.0f * q1 * q1 - 1.0f);};

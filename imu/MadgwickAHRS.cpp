@@ -35,8 +35,7 @@
 //-------------------------------------------------------------------------------------------
 // AHRS algorithm update
 
-Madgwick::Madgwick(const float* beta_ptr) :beta_ptr_(beta_ptr) {
-	beta = betaDef;
+Madgwick::Madgwick(){
 	q0 = 1.0f;
 	q1 = 0.0f;
 	q2 = 0.0f;
@@ -49,12 +48,7 @@ Madgwick::Madgwick(const float* beta_ptr) :beta_ptr_(beta_ptr) {
 //-------------------------------------------------------------------------------------------
 // IMU algorithm update
 
-void Madgwick::updateIMU(float gx, float gy, float gz, float ax, float ay, float az, bool init) {
-	beta = *beta_ptr_;
-	if (init) {
-		beta = 0.8;
-	}
-
+void Madgwick::updateIMU(float gx, float gy, float gz, float ax, float ay, float az, float beta) {
 	float recipNorm;
 	float s0, s1, s2, s3;
 	float qDot1, qDot2, qDot3, qDot4;

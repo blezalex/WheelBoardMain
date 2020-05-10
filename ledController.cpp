@@ -81,12 +81,14 @@ void led_controller_update() {
 			led_idx = 0;
 		}
 		else {
-			if (led_state.turn_state == TurnState::Left) {
-				led_set_color(LED_COUNT_SINGLE_SIDE - led_idx - 1, COLOR_YELLOW);
+			if ((led_state.turn_state == TurnState::Left && led_state.drive_state == DriveState::Reverse)
+					||
+					(led_state.turn_state == TurnState::Rigth && led_state.drive_state == DriveState::Fwd)) {
+				led_set_color(led_idx, COLOR_YELLOW);
 				led_set_color(LED_COUNT_SINGLE_SIDE + led_idx, COLOR_YELLOW);
 			}
 			else {
-				led_set_color(led_idx, COLOR_YELLOW);
+				led_set_color(LED_COUNT_SINGLE_SIDE - led_idx - 1, COLOR_YELLOW);
 				led_set_color(LED_COUNT_SINGLE_SIDE + LED_COUNT_SINGLE_SIDE - led_idx - 1, COLOR_YELLOW);
 			}
 
@@ -112,6 +114,23 @@ void led_controller_update() {
 	for (int i = 0; i < LED_COUNT_SINGLE_SIDE; i++) {
 		led_set_color(LED_COUNT_SINGLE_SIDE + i, back_color);
 	}
+}
+
+void led_controller_startup_animation() {
+	static uint16_t prev_time = 0;
+	uint16_t time = millis();
+	if (time - prev_time < 20u) {
+		return;
+	}
+	prev_time = time;
+
+
+	int led = rand() % LED_COUNT;
+	int clr = rand() % (1 << 4);
+	led_set_color(led,
+				((clr & (1)) ? 0x30 : 0)
+			| ((clr & (1 << 1)) ? 0x3000 : 0)
+			| ((clr & (1 << 2)) ? 0x300000 : 0) );
 }
 
 void led_controller_init() {

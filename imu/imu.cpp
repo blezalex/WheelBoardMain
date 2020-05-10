@@ -27,13 +27,13 @@ void IMU::compute(const MpuUpdate& update, bool init) {
 	if (init) {
 		// While gyro is getting initialized its data is invalid - ignore gyro.
 		// Take all data from ACC with much higher weight - assuming board is stationary (otherwise gyro would not calibrate)
-		mw_.updateIMU(0, 0, 0, update.acc[0] / (float)ACC_1G, update.acc[1] / (float)ACC_1G, update.acc[2] / (float)ACC_1G, true);
+		mw_.updateIMU(0, 0, 0, update.acc[0] / (float)ACC_1G, update.acc[1] / (float)ACC_1G, update.acc[2] / (float)ACC_1G, 0.8);
 	}
 	else {
 		rates[0] = update.gyro[0] * MW_GYRO_SCALE;
 		rates[1] = update.gyro[1] * MW_GYRO_SCALE;
 		rates[2] = update.gyro[2] * MW_GYRO_SCALE;
-		mw_.updateIMU(rates[0], rates[1], rates[2], update.acc[0] / (float)ACC_1G, update.acc[1] / (float)ACC_1G, update.acc[2] / (float)ACC_1G, false);
+		mw_.updateIMU(rates[0], rates[1], rates[2], update.acc[0] / (float)ACC_1G, update.acc[1] / (float)ACC_1G, update.acc[2] / (float)ACC_1G, config_->balance_settings.imu_beta);
 	}
 
 	angles[0] = mw_.getRoll() + config_->callibration.x_offset; // TODO: replace with proper vector rotation in MpuUpdate (so pid controler sees rotated gyro input too)

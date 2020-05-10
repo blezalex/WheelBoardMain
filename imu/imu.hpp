@@ -16,7 +16,7 @@ public:
 #ifndef MADGWICK
 	: accCompensatedVector_{ 0, 0, ACC_1G }, config_(config) {
 #else
-		:mw_(&config_->balance_settings.imu_beta), config_(config) {
+		: config_(config) {
 		mw_.begin(1000);
 #endif
 	}
