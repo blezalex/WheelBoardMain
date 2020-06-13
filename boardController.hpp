@@ -42,7 +42,11 @@ public:
 	// Send BRAKE_MOTOR_CMD after a short delay after controller goes into Stopped state.
 	void processBrakes() {
 		if (brakes_on_) {
-			setMotorOutput(BRAKE_MOTOR_CMD);
+			// Apply brakes only once, otherwise controller won't shutdown by timeout.
+			if (!first_stopped_to_brake_iteration_) {
+				setMotorOutput(BRAKE_MOTOR_CMD);
+			}
+
 			first_stopped_to_brake_iteration_ = true;
 			return;
 		}
@@ -62,9 +66,9 @@ public:
 	// Main control loop. Runs at 1000hz Must finish in less than 1ms otherwise controller will freeze.
 	void processUpdate(const MpuUpdate& update) {
 		imu_.compute(update);
-		State current_state = state_.update();
+		current_state_ = state_.update();
 
-		switch (current_state) {
+		switch (current_state_) {
 		case State::Stopped:
 			processBrakes();
 			status_led_.setState(0);
@@ -177,6 +181,10 @@ public:
 		return prev_out_;
 	}
 
+	State current_state() {
+		return current_state_;
+	}
+
 private:
 	Config* settings_;
 	IMU& imu_;
@@ -198,4 +206,5 @@ private:
 	int vesc_update_cycle_ctr_ = 0;
 
 	float balance_angle_ = 0;
+	State current_state_;
 };

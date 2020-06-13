@@ -88,6 +88,54 @@ void applyCalibrationConfig(const Config &cfg, Mpu *accGyro) {
   accGyro->applyAccZeroOffsets(acc_offsets);
 }
 
+
+void usart2txConfigure(bool manual) {
+	GPIO_InitTypeDef GPIO_InitStructure;
+
+	/* Configure USART Tx alternate function  */
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+	GPIO_InitStructure.GPIO_Mode = manual ? GPIO_Mode_Out_PP : GPIO_Mode_AF_PP;
+
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
+	GPIO_Init(GPIOA, &GPIO_InitStructure);
+}
+
+void configureVescBtInput() {
+	// PWM4, B7
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
+
+	/* GPIO configuration */
+	GPIO_InitTypeDef  GPIO_InitStructure;
+	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_7;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPD;
+	GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+	GPIO_EXTILineConfig(GPIO_PortSourceGPIOB, GPIO_PinSource7);
+
+	EXTI_InitTypeDef EXTI_InitStructure;
+	EXTI_InitStructure.EXTI_Line = EXTI_Line7;
+	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
+	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising_Falling;
+	EXTI_InitStructure.EXTI_LineCmd = ENABLE;
+	EXTI_Init(&EXTI_InitStructure);
+
+	NVIC_InitTypeDef NVIC_InitStructure;
+	NVIC_InitStructure.NVIC_IRQChannel = EXTI9_5_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVIC_InitStructure);
+}
+
+extern "C" void EXTI9_5_IRQHandler(void) {
+  if (EXTI_GetITStatus(EXTI_Line7))
+  {
+    EXTI_ClearITPendingBit(EXTI_Line7);
+    GPIO_WriteBit(GPIOA, GPIO_Pin_2, (BitAction)GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_7));
+  }
+}
+
 int main(void) {
   SystemInit();
 
@@ -110,6 +158,8 @@ int main(void) {
       0x0FFF);  // This parameter must be a number between 0 and 0x0FFF.
   IWDG_ReloadCounter();
   IWDG_Enable();
+
+  configureVescBtInput();
 
   PwmOut motor_out;
   motor_out.init(NEUTRAL_MOTOR_CMD);
@@ -181,6 +231,9 @@ int main(void) {
 
   write_pos = 0;
   read_pos = 0;
+  uint8_t debug_stream_type = 0;
+
+  bool passthough_enabled = false;
   while (1) {  // background work
     IWDG_ReloadCounter();
     led_controller_update();
@@ -189,7 +242,7 @@ int main(void) {
       last_check_time = millis();
 
       led_controller_set_state(vesc.mc_values_.rpm, imu.rates[2]);
-      switch (cfg.misc.log_type) {
+      switch (debug_stream_type) {
         case 1:
           debug[write_pos++] = (int8_t)imu.angles[ANGLE_DRIVE];
           break;
@@ -226,6 +279,14 @@ int main(void) {
         break;
       }
 
+      case RequestId_SET_DEBUG_STREAM_ID:
+      	if (comms.data_len() == 1) {
+      		debug_stream_type = comms.data()[0];
+      	} else {
+      		comms.SendMsg(ReplyId_GENERIC_FAIL);
+      	}
+      	break;
+
       case RequestId_GET_DEBUG_BUFFER: {
         // TODO: make sure it all fits in TX buffer or an overrun will occur
         if (write_pos < read_pos) {
@@ -243,6 +304,18 @@ int main(void) {
           read_pos = write_pos;
         }
         break;
+      }
+
+      case RequestId_TOGGLE_PASSTHROUGH: {
+      	if (main_ctrl.current_state() == State::Stopped) {
+        	passthough_enabled = !passthough_enabled;
+        	usart2txConfigure(passthough_enabled);
+        	comms.SendMsg(ReplyId_GENERIC_OK);
+      	}
+      	else {
+      		comms.SendMsg(ReplyId_GENERIC_FAIL);
+      	}
+      	break;
       }
 
       case RequestId_WRITE_CONFIG: {

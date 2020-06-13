@@ -100,7 +100,7 @@ void led_controller_update() {
 
 	if (led_state.drive_state == DriveState::Stopped) {
 		for (int i = 0; i < LED_COUNT; i++) {
-			led_set_color(i, 0x909090);
+			led_set_color(i, 0x606060);
 		}
 		return;
 	}
@@ -119,18 +119,23 @@ void led_controller_update() {
 void led_controller_startup_animation() {
 	static uint16_t prev_time = 0;
 	uint16_t time = millis();
-	if (time - prev_time < 20u) {
+	if (time - prev_time < 150u) {
 		return;
 	}
 	prev_time = time;
 
+	for (int i = 0; i < LED_COUNT; i++) {
+		led_set_color(i, 0);
+	}
 
-	int led = rand() % LED_COUNT;
-	int clr = rand() % (1 << 4);
-	led_set_color(led,
-				((clr & (1)) ? 0x30 : 0)
-			| ((clr & (1 << 1)) ? 0x3000 : 0)
-			| ((clr & (1 << 2)) ? 0x300000 : 0) );
+	for (int i = 0; i < 4; i++) {
+		int led = rand() % LED_COUNT;
+		int clr = rand() % (1 << 4);
+		led_set_color(led,
+					((clr & (1)) ? 0x30 : 0)
+				| ((clr & (1 << 1)) ? 0x3000 : 0)
+				| ((clr & (1 << 2)) ? 0x300000 : 0) );
+	}
 }
 
 void led_controller_init() {

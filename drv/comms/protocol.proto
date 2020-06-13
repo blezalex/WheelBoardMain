@@ -17,6 +17,8 @@ enum RequestId {
   CALLIBRATE_ACC = 4;
   SAVE_CONFIG = 5;
   GET_DEBUG_BUFFER = 6;
+  SET_DEBUG_STREAM_ID = 7;
+  TOGGLE_PASSTHROUGH = 8;
 }
 
 enum ReplyId {
@@ -81,13 +83,6 @@ message Config {
 	// Max rotation rate for D param is limited to 100 deg/sec by default
     required int32 balance_d_param_limiter = 8 [ default = 100 ];
 
-    // 100hz = 0.385
-    // 50hz = 0.24
-    // 40hz = 0.20
-    // 30hz = 0.158
-    // 20hz = 0.11
-    // 10hz = 0.06
-    // 1hz  = 0.006
     required float balance_d_param_lpf_hz = 9 [ default = 50 ];
 
     // MPU6050_LPF_256HZ 0, MPU6050_LPF_188HZ 1, MPU6050_LPF_98HZ 2,
@@ -137,17 +132,14 @@ message Config {
 
     // add current erpm to throttle input with 'speed_input_mixin' weight
     optional float speed_input_mixin = 14 [ default = 0 ];
-  }
-  
-  message FloatSettings  {
-  	required float p_scaler = 1 [ default = 1 ];
-  	required float p_reconcile_rate = 2 [ default = 0.001 ];
+    
+    
+    // length of 1 electrical rotation
+    optional float erpm_to_dist_const = 15 [ default = 1 ];
   }
   
   required Misc misc = 5;
   optional PusbackSettings  pushback = 6;
-  
-  optional FloatSettings floating = 7;
 }
 
 message Stats {
