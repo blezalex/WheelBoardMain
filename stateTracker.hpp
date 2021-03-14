@@ -3,7 +3,7 @@
 #include "guards/guard.hpp"
 #include "arduino.h"
 
-enum State {
+enum class State {
 	Stopped,
 	FirstIteration,
 	Starting,

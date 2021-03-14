@@ -11,6 +11,8 @@ void initArduino();
 
 uint16_t millis();
 
+uint32_t millis32();
+
 void delay(uint16_t time);
 
 inline float fmap(float x, float in_min, float in_max, float out_min, float out_max) {

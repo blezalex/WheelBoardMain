@@ -42,8 +42,8 @@ public:
 	// Send BRAKE_MOTOR_CMD after a short delay after controller goes into Stopped state.
 	void processBrakes() {
 		if (brakes_on_) {
-			// Apply brakes only once, otherwise controller won't shutdown by timeout.
-			if (!first_stopped_to_brake_iteration_) {
+			// Apply brakes only until timeout to allow vesc go to sleep after timeout.
+			if (stopped_since_ts32_ + 1000*60*1 > millis32() ) {
 				setMotorOutput(BRAKE_MOTOR_CMD);
 			}
 
@@ -54,10 +54,12 @@ public:
 		setMotorOutput(0);
 		if (first_stopped_to_brake_iteration_) {
 			first_stopped_to_brake_iteration_ = false;
+			stopped_since_ts32_ = millis32();
 			stopped_since_ts_ = millis();
 		}
 		else {
-			if (millis() - stopped_since_ts_ > 800u) {
+			// Apply brakes after 500ms delay to avoid very hard stop
+			if (millis() - stopped_since_ts_ > 500u) {
 				brakes_on_ = true;
 			}
 		}
@@ -199,6 +201,7 @@ private:
 	GenericOut& green_led_;
 	BiQuadLpf motor_out_lpf_;
 	uint16_t stopped_since_ts_;
+	uint32_t stopped_since_ts32_;
 	bool brakes_on_ = false;
 	bool first_stopped_to_brake_iteration_ = true;
 

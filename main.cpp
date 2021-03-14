@@ -45,8 +45,8 @@ extern "C" void EXTI15_10_IRQHandler(void) {
 
 class InitWaiter : public UpdateListener {
  public:
-  InitWaiter(GenericOut *status_led, IMU *imu, Guard *angle_guard)
-      : status_led_(status_led), imu_(imu), angle_guard_(angle_guard) {}
+  InitWaiter(IMU *imu, Guard* angle_guard)
+      : imu_(imu), angle_guard_(angle_guard) {}
 
   void processUpdate(const MpuUpdate &update) {
     if (!accGyro.calibrationComplete()) {
@@ -57,22 +57,9 @@ class InitWaiter : public UpdateListener {
     angle_guard_->Update();
   }
 
-  void waitForAccGyroCalibration() {
-    uint16_t last_check_time = 0;
-    while (!accGyro.calibrationComplete() || angle_guard_->CanStart()) {
-      IWDG_ReloadCounter();
-      if ((uint16_t)(millis() - last_check_time) > 200u) {
-        last_check_time = millis();
-        status_led_->toggle();
-      }
-      led_controller_startup_animation();
-    }
-  }
-
  private:
-  GenericOut *status_led_;
   IMU *imu_;
-  Guard *angle_guard_;
+  Guard* angle_guard_;
 };
 
 static uint8_t scratch[256];
@@ -128,12 +115,33 @@ void configureVescBtInput() {
 	NVIC_Init(&NVIC_InitStructure);
 }
 
+
+void configurePowerOnSignal() {
+	// PWM5, B8
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
+
+	/* GPIO configuration */
+	GPIO_InitTypeDef  GPIO_InitStructure;
+	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_8;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_Init(GPIOB, &GPIO_InitStructure);
+}
+
 extern "C" void EXTI9_5_IRQHandler(void) {
   if (EXTI_GetITStatus(EXTI_Line7))
   {
     EXTI_ClearITPendingBit(EXTI_Line7);
     GPIO_WriteBit(GPIOA, GPIO_Pin_2, (BitAction)GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_7));
   }
+}
+
+static uint32_t last_running_timestamp;
+
+void shutdownIfTimeout(GenericOut* power_ctr) {
+	if (millis32() > (last_running_timestamp + 1000*60*5)) {
+		power_ctr->setState(false);
+	}
 }
 
 int main(void) {
@@ -154,17 +162,21 @@ int main(void) {
   /* Enable Watchdog*/
   IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);
   IWDG_SetPrescaler(IWDG_Prescaler_8);  // 4, 8, 16 ... 256
-  IWDG_SetReload(
-      0x0FFF);  // This parameter must be a number between 0 and 0x0FFF.
+  IWDG_SetReload(0x0FFF);  // This parameter must be a number between 0 and 0x0FFF.
   IWDG_ReloadCounter();
   IWDG_Enable();
 
   configureVescBtInput();
+  GenericOut power_signal(RCC_APB2Periph_GPIOB, GPIOB, GPIO_Pin_8, 0);
+  power_signal.init(false);
+  power_signal.setState(true);
 
   PwmOut motor_out;
   motor_out.init(NEUTRAL_MOTOR_CMD);
 
   initArduino();
+
+  last_running_timestamp = millis32();
 
   i2c_init();
   Serial1.Init(USART1, 115200);
@@ -195,8 +207,7 @@ int main(void) {
 
   IMU imu(&cfg);
   AngleGuard angle_guard(imu, &cfg.balance_settings);
-  InitWaiter waiter(&status_led, &imu,
-                    &angle_guard);  // wait for angle. Wait for pads too?
+  InitWaiter waiter(&imu, &angle_guard);  // wait for angle. Wait for pads too?
   accGyro.setListener(&waiter);
   accGyro.init(cfg.balance_settings.global_gyro_lpf);
 
@@ -204,7 +215,35 @@ int main(void) {
   beeper.init(true);
 
   led_controller_init();
-  waiter.waitForAccGyroCalibration();
+
+
+  beeper.toggle();
+  {
+		uint16_t last_check_time = 0;
+		while (!accGyro.calibrationComplete() || angle_guard.CanStart()) {
+			IWDG_ReloadCounter();
+			if ((uint16_t)(millis() - last_check_time) > 200u) {
+				last_check_time = millis();
+				status_led.toggle();
+				beeper.setState(false);
+			}
+			led_controller_startup_animation();
+
+			shutdownIfTimeout(&power_signal);
+		}
+  }
+
+
+  // Beep to indicate calibration done.
+  {
+		beeper.setState(true);
+		delay(300);
+		beeper.setState(false);
+		delay(500);
+		beeper.setState(true);
+		delay(300);
+		beeper.setState(false);
+  }
 
   GenericOut green_led(RCC_APB2Periph_GPIOB, GPIOB, GPIO_Pin_3, true);
   green_led.init();
@@ -237,6 +276,13 @@ int main(void) {
   while (1) {  // background work
     IWDG_ReloadCounter();
     led_controller_update();
+
+    if (main_ctrl.current_state() == State::Running) {
+    	last_running_timestamp = millis32();
+    }
+    else {
+    	shutdownIfTimeout(&power_signal);
+    }
 
     if ((uint16_t)(millis() - last_check_time) > 100u) {
       last_check_time = millis();
