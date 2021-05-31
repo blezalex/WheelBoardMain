@@ -26,7 +26,10 @@ public:
 		avg_running_motor_out_(&settings->misc.throttle_rc),
 		green_led_(green_led),
 		motor_out_lpf_(&settings->balance_settings.output_lpf_hz),
-		vesc_(vesc) {
+		vesc_(vesc),
+		load_lift_current_lpf_(&settings->load_lift.filter_rc),
+		load_lift_ramp_(&settings->load_lift.ramp_deg_sec, &settings->load_lift.ramp_deg_sec, &settings->load_lift.max_angle),
+		pushback_ramp_(&settings->pushback.push_raise_speed_deg_sec, &settings->pushback.push_release_speed_deg_sec,  &settings->pushback.push_angle){
 	}
 
 	float filterMotorCommand(float cmd) {
@@ -84,6 +87,8 @@ public:
 			prev_out_ = 0;
 			avg_running_motor_out_.reset();
 			status_led_.setState(1);
+			load_lift_ramp_.Reset();
+			pushback_ramp_.Reset();
 			// intentional fall through
 		case State::Starting:
 			setMotorOutput(filterMotorCommand(balancer_.computeStarting((float*)imu_.rates, (float*)imu_.angles, state_.start_progress())));
@@ -98,7 +103,10 @@ public:
 			bool warning_requested = shouldWarn(out);
 			beeper_.setState(warning_requested);
 
-			// updateBalancingSetPoint(warning_requested && abs(vesc_->mc_values_.erpm_smoothed) > settings_->pushback.min_speed_erpm, vesc_->mc_values_.erpm_smoothed > 0);
+
+			balance_angle_ = computeLoadLiftOffset(vesc_->mc_values_.avg_motor_current, &settings_->load_lift);
+
+			balance_angle_+= computePushbackOffset(warning_requested && fabsf(vesc_->mc_values_.erpm_smoothed) > settings_->pushback.min_speed_erpm, vesc_->mc_values_.erpm_smoothed > 0);
 			break;
 		}
 
@@ -120,36 +128,27 @@ public:
 		return warning_requested;
 	}
 
-	void updateBalancingSetPoint(bool shouldPushback, bool forward) {
-		if (!shouldPushback) {
-			if (balance_angle_ < 0) {
-				balance_angle_ += settings_->pushback.push_release_speed_deg_sec / 1000;
-				if (balance_angle_ > 0) {
-					balance_angle_ = 0;
-				}
-			}
-			else {
-				balance_angle_ -= settings_->pushback.push_release_speed_deg_sec  / 1000;
-				if (balance_angle_ < 0) {
-					balance_angle_ = 0;
-				}
-			}
-			return;
-		}
-
-		const int32_t max_push_angle = abs(settings_->pushback.push_angle);
-		if (forward && settings_->pushback.push_angle > 0) {
-			balance_angle_ += settings_->pushback.push_raise_speed_deg_sec / 1000;
-			if (balance_angle_ > max_push_angle) {
-				balance_angle_ = max_push_angle;
-			}
+	float computeLoadLiftOffset(float unfiltered_motor_current, const Config_LoadLift* lift_settings) {
+		const float motor_current = load_lift_current_lpf_.compute(unfiltered_motor_current);
+		if (fabs(motor_current) > lift_settings->start_current) {
+			float current_with_start_offset = motor_current > 0
+					? motor_current - lift_settings->start_current
+					: motor_current + lift_settings->start_current;
+			return load_lift_ramp_.Compute(current_with_start_offset * lift_settings->multiplier);
 		}
 		else {
-			balance_angle_ -= settings_->pushback.push_raise_speed_deg_sec  / 1000;
-			if (balance_angle_ < -max_push_angle) {
-				balance_angle_ = -max_push_angle;
-			}
+			return load_lift_ramp_.Compute(0);
 		}
+	}
+
+
+	float computePushbackOffset(bool shouldPushback, bool forward) {
+		if (!shouldPushback) {
+			return pushback_ramp_.Compute(0);
+		}
+
+		float push_angle = forward ? settings_->pushback.push_angle : -settings_->pushback.push_angle;
+		return pushback_ramp_.Compute(push_angle);
 	}
 
 	void setMotorOutput(float cmd) {
@@ -210,4 +209,8 @@ private:
 
 	float balance_angle_ = 0;
 	State current_state_;
+
+	LPF load_lift_current_lpf_ = 0;
+	Ramp load_lift_ramp_;
+	Ramp pushback_ramp_;
 };

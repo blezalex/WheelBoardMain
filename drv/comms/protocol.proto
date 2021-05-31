@@ -103,11 +103,12 @@ message Config {
   required BalancingConfig balance_settings = 4;
 
   message PusbackSettings {
-    required int32 min_speed_erpm = 1 [ default = 1000 ];
-    required int32 push_angle = 2 [ default = 5 ];
+    required int32 min_speed_erpm = 1 [ default = 100000 ];
+    reserved 2;
 
     required float push_raise_speed_deg_sec = 3 [ default = 0.5 ];
     required float push_release_speed_deg_sec = 4 [ default = 0.2 ];
+    optional float push_angle = 5 [ default = 5 ];
   }
   
   message Misc {
@@ -140,6 +141,16 @@ message Config {
   
   required Misc misc = 5;
   optional PusbackSettings  pushback = 6;
+  
+  message LoadLift {
+    required int32 start_current = 1 [ default = 10 ];
+    required float max_angle = 2 [ default = 5];
+    required float filter_rc = 3 [ default = 0.05 ];
+    required float multiplier = 4 [ default = 0.1 ]; // degrees = current*multiplier
+	 required float ramp_deg_sec = 5 [ default = 0.5 ]; // deg per sec.
+  }
+
+  required LoadLift load_lift = 7;
 }
 
 message Stats {
