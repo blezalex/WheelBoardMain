@@ -42,30 +42,30 @@ public:
 		return new_out;
 	}
 
-	// Send BRAKE_MOTOR_CMD after a short delay after controller goes into Stopped state.
-	void processBrakes() {
-		if (brakes_on_) {
-			// Apply brakes only until timeout to allow vesc go to sleep after timeout.
-			if (stopped_since_ts32_ + 1000*60*1 > millis32() ) {
-				setMotorOutput(BRAKE_MOTOR_CMD);
-			}
 
-			first_stopped_to_brake_iteration_ = true;
+	// Send BRAKE_MOTOR_CMD after a short delay after controller goes into Stopped state.
+	void enableBrakes() {
+		if (first_stopped_to_brake_iteration_) {
+			// Remember the stop time on the first iteration. Don't overwrite it until run again.
+			first_stopped_to_brake_iteration_ = false;
+			stopped_since_ts32_ = millis32();
 			return;
 		}
 
+		uint32_t stopped_millis = millis32() - stopped_since_ts32_;
+		if (stopped_millis > 1000ul*60ul*1ul) {
+			// Timeout after 1 minute, release brakes to allow controller got to sleep.
+			return;
+		}
+
+		// Wait 400ms, then apply brakes to avoid very hard stop
+		if (stopped_millis > 400ul) {
+			setMotorOutput(BRAKE_MOTOR_CMD);
+			return;
+		}
+
+		// Freewheel the motor.
 		setMotorOutput(0);
-		if (first_stopped_to_brake_iteration_) {
-			first_stopped_to_brake_iteration_ = false;
-			stopped_since_ts32_ = millis32();
-			stopped_since_ts_ = millis();
-		}
-		else {
-			// Apply brakes after 500ms delay to avoid very hard stop
-			if (millis() - stopped_since_ts_ > 500u) {
-				brakes_on_ = true;
-			}
-		}
 	}
 
 	// Main control loop. Runs at 1000hz Must finish in less than 1ms otherwise controller will freeze.
@@ -75,13 +75,13 @@ public:
 
 		switch (current_state_) {
 		case State::Stopped:
-			processBrakes();
+			enableBrakes();
 			status_led_.setState(0);
 			beeper_.setState(0);
 			break;
 
 		case State::FirstIteration:
-			brakes_on_ = false;
+			first_stopped_to_brake_iteration_ = true;
 			balancer_.reset();
 			motor_out_lpf_.reset(0);
 			prev_out_ = 0;
@@ -199,9 +199,7 @@ private:
 	float prev_out_;
 	GenericOut& green_led_;
 	BiQuadLpf motor_out_lpf_;
-	uint16_t stopped_since_ts_;
 	uint32_t stopped_since_ts32_;
-	bool brakes_on_ = false;
 	bool first_stopped_to_brake_iteration_ = true;
 
 	VescComm* vesc_;

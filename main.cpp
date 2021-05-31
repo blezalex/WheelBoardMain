@@ -139,7 +139,7 @@ extern "C" void EXTI9_5_IRQHandler(void) {
 static uint32_t last_running_timestamp;
 
 void shutdownIfTimeout(GenericOut* power_ctr) {
-	if (millis32() > (last_running_timestamp + 1000*60*5)) {
+	if (millis32() > (last_running_timestamp + 1000ul*60ul*5ul)) {
 		power_ctr->setState(false);
 	}
 }

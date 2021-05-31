@@ -150,7 +150,7 @@ message Config {
 	 required float ramp_deg_sec = 5 [ default = 0.5 ]; // deg per sec.
   }
 
-  required LoadLift load_lift = 7;
+  optional LoadLift load_lift = 7;
 }
 
 message Stats {
