@@ -82,6 +82,7 @@ public:
 
 		case State::FirstIteration:
 			first_stopped_to_brake_iteration_ = true;
+			last_current_ = 0;
 			balancer_.reset();
 			motor_out_lpf_.reset(0);
 			prev_out_ = 0;
@@ -104,7 +105,7 @@ public:
 			beeper_.setState(warning_requested);
 
 
-			balance_angle_ = computeLoadLiftOffset(vesc_->mc_values_.avg_motor_current, &settings_->load_lift);
+			balance_angle_ = computeLoadLiftOffset(last_current_, &settings_->load_lift);
 
 			balance_angle_+= computePushbackOffset(warning_requested && fabsf(vesc_->mc_values_.erpm_smoothed) > settings_->pushback.min_speed_erpm, vesc_->mc_values_.erpm_smoothed > 0);
 			break;
@@ -161,7 +162,9 @@ public:
 				vesc_->setCurrentBrake(20);
 			}
 			else {
-				vesc_->setCurrent(cmd * usart_scaling);
+				float current = cmd * usart_scaling;
+				last_current_ = current;
+				vesc_->setCurrent(current);
 			}
 		}
 		else {
@@ -211,4 +214,5 @@ private:
 	LPF load_lift_current_lpf_ = 0;
 	Ramp load_lift_ramp_;
 	Ramp pushback_ramp_;
+	float last_current_ = 0;
 };
