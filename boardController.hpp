@@ -29,7 +29,8 @@ public:
 		vesc_(vesc),
 		load_lift_current_lpf_(&settings->load_lift.filter_rc),
 		load_lift_ramp_(&settings->load_lift.ramp_deg_sec, &settings->load_lift.ramp_deg_sec, &settings->load_lift.max_angle),
-		pushback_ramp_(&settings->pushback.push_raise_speed_deg_sec, &settings->pushback.push_release_speed_deg_sec,  &settings->pushback.push_angle){
+		pushback_ramp_(&settings->pushback.push_raise_speed_deg_sec, &settings->pushback.push_release_speed_deg_sec,  &settings->pushback.push_angle),
+		motor_acceleration_lpf_(&settings->keep_roll.filter_rc){
 	}
 
 	float filterMotorCommand(float cmd) {
@@ -90,6 +91,8 @@ public:
 			status_led_.setState(1);
 			load_lift_ramp_.Reset();
 			pushback_ramp_.Reset();
+			prev_motor_erpm_ = 0;
+			motor_acceleration_lpf_.reset();
 			// intentional fall through
 		case State::Starting:
 			setMotorOutput(filterMotorCommand(balancer_.computeStarting((float*)imu_.rates, (float*)imu_.angles, state_.start_progress())));
@@ -108,6 +111,8 @@ public:
 			balance_angle_ = computeLoadLiftOffset(last_current_, &settings_->load_lift);
 
 			balance_angle_+= computePushbackOffset(warning_requested && fabsf(vesc_->mc_values_.erpm_smoothed) > settings_->pushback.min_speed_erpm, vesc_->mc_values_.erpm_smoothed > 0);
+
+			balance_angle_ += computeKeepRollOffset();
 			break;
 		}
 
@@ -152,6 +157,12 @@ public:
 		return pushback_ramp_.Compute(push_angle);
 	}
 
+	float computeKeepRollOffset() {
+		float erpm_acc = motor_acceleration_lpf_.getVal();
+
+		return constrain(erpm_acc * settings_->keep_roll.multiplier,  -settings_->keep_roll.max_angle, settings_->keep_roll.max_angle);
+	}
+
 	void setMotorOutput(float cmd) {
 		float usart_scaling = settings_->balance_settings.usart_control_scaling;
 		if (fabs(usart_scaling) > 0) {
@@ -189,6 +200,13 @@ public:
 		return current_state_;
 	}
 
+	void UpdateMotorERPM(float new_val) {
+		motor_acceleration_lpf_.compute(new_val - prev_motor_erpm_);
+		prev_motor_erpm_ = new_val;
+	}
+
+
+
 private:
 	Config* settings_;
 	IMU& imu_;
@@ -215,4 +233,7 @@ private:
 	Ramp load_lift_ramp_;
 	Ramp pushback_ramp_;
 	float last_current_ = 0;
+
+	float prev_motor_erpm_ = 0;
+	LPF motor_acceleration_lpf_;
 };
