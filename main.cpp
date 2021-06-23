@@ -144,6 +144,8 @@ void shutdownIfTimeout(GenericOut* power_ctr) {
 	}
 }
 
+Communicator comms(&Serial1);
+
 int main(void) {
   SystemInit();
 
@@ -265,7 +267,6 @@ int main(void) {
 
   accGyro.setListener(&main_ctrl);
 
-  Communicator comms(&Serial1);
   uint16_t last_check_time = 0;
 
   write_pos = 0;
