@@ -8,7 +8,7 @@
 #include <math.h>
 
 #define STOPPED_SPEED  300 // speed at which board is considered stopped
-#define TURN_INDICATION_MIN_RATE_DEG_SEC 30
+#define TURN_INDICATION_MIN_RATE_DEG_SEC 45
 
 enum DriveState {
 	Stopped, // Display battery level?
@@ -31,7 +31,7 @@ struct LedState {
 
 LedState led_state;
 
-float rotation_rc = 0.2;
+float rotation_rc = 0.1;
 LPF rotation_lpf(&rotation_rc);
 
 
