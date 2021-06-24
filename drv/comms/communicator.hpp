@@ -9,7 +9,7 @@
 
 class Communicator {
 public:
-	Communicator(Usart* comms_channel) : comms_(comms_channel) { }
+	void Init(Usart* comms_channel) { comms_ = comms_channel; }
 
 	void SendMsg(uint8_t msg_id, const uint8_t* data, uint32_t data_len) {
 		uint8_t header[kHeaderSize];
@@ -149,5 +149,5 @@ private:
 	// previous update processed a message. buffer_pos_ still poits to its end or some bytes past it. move data if past.
 	bool move_message_ = false;
 
-	Usart* comms_;
+	Usart* comms_ = nullptr;
 };

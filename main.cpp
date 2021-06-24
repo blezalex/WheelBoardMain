@@ -144,7 +144,7 @@ void shutdownIfTimeout(GenericOut* power_ctr) {
 	}
 }
 
-Communicator comms(&Serial1);
+Communicator comms;
 
 int main(void) {
   SystemInit();
@@ -183,6 +183,8 @@ int main(void) {
   i2c_init();
   Serial1.Init(USART1, 115200);
   Serial2.Init(USART2, 115200);
+
+  comms.Init(&Serial1);
 
   Config cfg = Config_init_default;
   if (readSettingsFromFlash(&cfg)) {
