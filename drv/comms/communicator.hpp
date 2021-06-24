@@ -142,7 +142,7 @@ private:
 		return rx_data[expected_msg_len() - 1];
 	}
 
-	uint8_t rx_data[255];
+	uint8_t rx_data[512];
 
 	uint16_t last_uart_data_time_ = 0;
 
