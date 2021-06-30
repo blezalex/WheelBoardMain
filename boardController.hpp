@@ -99,8 +99,7 @@ public:
 			break;
 
 		case State::Running:
-			float out = balancer_.compute((float*)imu_.rates, (float*)imu_.angles, balance_angle_)
-				+ vesc_->mc_values_.erpm_smoothed * settings_->misc.speed_input_mixin * 0.002f; // 0.002 to keep old config value. TODO: update cfg and get rid of multiplier
+			float out = balancer_.compute((float*)imu_.rates, (float*)imu_.angles, balance_angle_);
 
 			setMotorOutput(filterMotorCommand(out));
 

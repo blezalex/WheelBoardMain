@@ -131,9 +131,7 @@ message Config {
     optional float low_volt_threshold = 12 [ default = 45 ];
     optional float volt_rc = 13 [ default = 0.25 ];
 
-    // add current erpm to throttle input with 'speed_input_mixin' weight
-    optional float speed_input_mixin = 14 [ default = 0 ];
-    
+    reserved 14;
     
     // length of 1 electrical rotation
     optional float erpm_to_dist_const = 15 [ default = 1 ];
