@@ -310,6 +310,9 @@ int main(void) {
         case 6:
           debug[write_pos++] = (int8_t)(vesc.mc_values_.avg_input_current);
           break;
+        case 7:
+          debug[write_pos++] = (int8_t)(vesc.mc_values_.rpm);
+          break;
       }
 
       if (write_pos >= sizeof(debug)) write_pos = 0;
