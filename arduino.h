@@ -9,7 +9,7 @@
 
 void initArduino();
 
-uint16_t millis();
+uint16_t half_millis();
 
 uint32_t millis32();
 

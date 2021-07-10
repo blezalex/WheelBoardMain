@@ -45,7 +45,7 @@ public:
 
 private:
 	void handleStartingState() {
-		uint16_t durationSinceStart = millis() - start_timestamp_;
+		uint16_t durationSinceStart = (half_millis() - start_timestamp_) / 2;
 		if (durationSinceStart > START_DURATION) {
 			state_ = State::Running;
 			start_progress_ = 1;
@@ -65,7 +65,7 @@ private:
 		}
 
 		state_ = State::FirstIteration;
-		start_timestamp_ = millis();
+		start_timestamp_ = half_millis();
 		start_progress_ = 0;
 	}
 

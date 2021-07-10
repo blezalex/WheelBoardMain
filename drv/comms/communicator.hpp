@@ -54,7 +54,7 @@ public:
 		if (!comms_->HasData())
 			return false;
 
-		uint16_t time = millis();
+		uint16_t time = half_millis();
 		if ((uint16_t)(time - last_uart_data_time_) > kMsgTimeoutMs) {
 			buffer_pos_ = 0;
 			move_message_ = false;

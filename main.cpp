@@ -226,8 +226,8 @@ int main(void) {
 		uint16_t last_check_time = 0;
 		while (!accGyro.calibrationComplete() || angle_guard.CanStart()) {
 			IWDG_ReloadCounter();
-			if ((uint16_t)(millis() - last_check_time) > 200u) {
-				last_check_time = millis();
+			if ((uint16_t)(half_millis() - last_check_time) > 200u) {
+				last_check_time = half_millis();
 				status_led.toggle();
 				beeper.setState(false);
 			}
@@ -241,11 +241,11 @@ int main(void) {
   // Beep to indicate calibration done.
   {
 		beeper.setState(true);
-		delay(300);
+		delay(150);
 		beeper.setState(false);
-		delay(500);
+		delay(250);
 		beeper.setState(true);
-		delay(300);
+		delay(150);
 		beeper.setState(false);
   }
 
@@ -287,8 +287,8 @@ int main(void) {
     	shutdownIfTimeout(&power_signal);
     }
 
-    if ((uint16_t)(millis() - last_check_time) > 100u) {
-      last_check_time = millis();
+    if ((uint16_t)(half_millis() - last_check_time) > 100u) {
+      last_check_time = half_millis();
 
       led_controller_set_state(vesc.mc_values_.rpm, imu.rates[2]);
       switch (debug_stream_type) {

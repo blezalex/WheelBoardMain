@@ -65,7 +65,7 @@ void led_controller_set_state(float speed, float rotation_rate) {
 void led_controller_update() {
 	static uint16_t prev_time = 0;
 
-	uint16_t time = millis();
+	uint16_t time = half_millis();
 	if (time - prev_time < 80u) {
 		return;
 	}
@@ -118,7 +118,7 @@ void led_controller_update() {
 
 void led_controller_startup_animation() {
 	static uint16_t prev_time = 0;
-	uint16_t time = millis();
+	uint16_t time = half_millis();
 	if (time - prev_time < 150u) {
 		return;
 	}

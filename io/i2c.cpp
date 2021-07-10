@@ -31,9 +31,9 @@ void i2c_init() {
 
     while (!GPIO_ReadInputDataBit(GPIOB, PinSDA)) {
     	GPIO_WriteBit(GPIOB, PinSCL, BitAction::Bit_RESET);
-    	delay(4);
+    	delay(2);
     	GPIO_WriteBit(GPIOB, PinSCL, BitAction::Bit_SET);
-    	delay(4);
+    	delay(2);
     }
 
 
@@ -43,12 +43,12 @@ void i2c_init() {
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_OD;
     GPIO_Init(GPIOB, &GPIO_InitStructure);
 
-    delay(4);
+    delay(2);
 
     I2C_DeInit(I2C2);
-    delay(4);
+    delay(2);
     I2C_Cmd(I2C2, ENABLE);
-    delay(4);
+    delay(2);
 
 	/* I2C configuration */
     I2C_InitTypeDef  I2C_InitStructure;

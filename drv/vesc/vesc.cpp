@@ -50,7 +50,7 @@ void VescComm::setCurrentBrake(float current) {
 	sendRequest(request , sizeof(request));
 }
 
-#define kMsgTimeoutMs 100u
+#define kMsgTimeoutMsDiv2 100u
 #define kHeaderSize 3
 #define kFooterSize 3
 
@@ -100,8 +100,8 @@ int VescComm::update() {
 	if (!serial_->HasData())
 		return 0;
 
-	uint16_t time = millis();
-	if ((uint16_t)(time - last_uart_data_time_) > kMsgTimeoutMs) {
+	uint16_t time = half_millis();
+	if ((uint16_t)(time - last_uart_data_time_) > kMsgTimeoutMsDiv2) {
 		buffer_pos_ = 0;
 	}
 

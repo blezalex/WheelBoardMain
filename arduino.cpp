@@ -47,7 +47,7 @@ extern "C" void TIM2_IRQHandler() {
 	}
 }
 
-uint16_t millis() {
+uint16_t half_millis() {
 	return TIM2->CNT;
 }
 
@@ -64,11 +64,11 @@ uint32_t millis32() {
 		// prior to calling it_pending.
 		high_bytes = millis_time_ + it_pending;
 	} while (enter_cnt > TIM2->CNT); // overflow occurred during the loop execution.
-	return (high_bytes << 16) | enter_cnt;
+	return ((high_bytes << 16) | enter_cnt) / 2;
 }
 
 void delay(uint16_t time) {
-	uint16_t start_time = millis();
+	uint16_t start_time = half_millis();
 
-	while ((uint16_t)(millis() - start_time) < time);
+	while ((uint16_t)(half_millis() - start_time) < time*2);
 }
