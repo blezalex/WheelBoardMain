@@ -22,7 +22,9 @@ public:
 	}
 	void compute(const MpuUpdate& update, bool init = false);
 
+	// deg
 	volatile float angles[2];
+	// deg/sec
 	volatile float rates[3];
 private:
 

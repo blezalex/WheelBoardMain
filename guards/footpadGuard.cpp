@@ -94,8 +94,8 @@ bool FootpadGuard::MustStop() {
 
 	if (!stop_requested_) {
 		stop_requested_ = true;
-		stop_request_timestamp_ = millis();
+		stop_request_timestamp_ = half_millis();
 	}
 
-	return (uint16_t)(millis() - stop_request_timestamp_) > settings_->shutoff_delay_ms;
+	return (uint16_t)(half_millis() - stop_request_timestamp_)*2 > settings_->shutoff_delay_ms;
 }

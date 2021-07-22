@@ -17,6 +17,7 @@ public:
 		balance_pid_.reset();
 		d_lpf_.reset();
 		max_D_multiplier_so_far_ = 0;
+		prev_balance_angle_ = 0;
 	}
 
 	float getPIInput(float* angles, float balance_angle) {
@@ -38,8 +39,10 @@ public:
 	// Returns torque request based on current imu and gyro readings. Expected range is [-1:1],
 	// but not constrained to that range.
 	float compute(const float* gyro_rates, float* angles, float balance_angle) {
+		const float setpoint_diff = balance_angle - prev_balance_angle_;
+		prev_balance_angle_ = balance_angle;
 		float avg_gyro_upd = constrain(
-				gyro_rates[ANGLE_DRIVE],
+				setpoint_diff + gyro_rates[ANGLE_DRIVE],
 				-settings_->balance_settings.balance_d_param_limiter,
 				settings_->balance_settings.balance_d_param_limiter);
 
@@ -70,4 +73,5 @@ private:
 	float max_D_multiplier_so_far_ = 0;
 	BiQuadLpf d_lpf_;
 	PidController balance_pid_;
+	float prev_balance_angle_;
 };
