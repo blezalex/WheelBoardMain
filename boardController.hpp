@@ -199,9 +199,9 @@ public:
 		return current_state_;
 	}
 
-	void UpdateMotorERPM(float new_val) {
-		motor_acceleration_lpf_.compute(new_val - prev_motor_erpm_);
-		prev_motor_erpm_ = new_val;
+	void OnErpmUpdate(float new_val) {
+		motor_acceleration_lpf_.compute(new_val - vesc_->mc_values_.erpm_smoothed);
+		//prev_motor_erpm_ = new_val;
 	}
 
 
