@@ -13,7 +13,10 @@ public:
 	float compute(float error) {
 		float de = error - _prev_error;
 		_prev_error = error;
+		return compute(error, de);
+	}
 
+	float compute(float error, float de) {
 		// Cumulative sumI changes slowly, it is OK to use I value from previous iteration here.
 		float output =  error * _params->p + de * _params->d + applyExpoPoly(_sumI,_params->i_expo);
 
@@ -31,8 +34,12 @@ public:
 	}
 
 	void reset() {
-		_sumI = 0;
+		resetI();
 		_prev_error = 0;
+	}
+
+	void resetI() {
+		_sumI = 0;
 	}
 
 private:

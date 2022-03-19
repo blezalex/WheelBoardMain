@@ -160,6 +160,8 @@ message Config {
   }
 
   optional KeepRoll keep_roll = 8;
+
+  optional PidConfig rate_pid = 9;
 }
 
 message Stats {
