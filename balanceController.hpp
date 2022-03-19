@@ -9,15 +9,13 @@
 class BalanceController  {
 public:
 	BalanceController(const Config* settings) :
-		settings_(settings), d_lpf_(&settings->balance_settings.balance_d_param_lpf_hz), balance_pid_(&settings->balance_pid) {
+		settings_(settings), balance_pid_(&settings->balance_pid) {
 		reset();
 	}
 
 	void reset() {
 		balance_pid_.reset();
-		d_lpf_.reset();
 		max_D_multiplier_so_far_ = 0;
-		prev_balance_angle_ = 0;
 	}
 
 	float getPIInput(float* angles, float balance_angle) {
@@ -39,31 +37,16 @@ public:
 	// Returns torque request based on current imu and gyro readings. Expected range is [-1:1],
 	// but not constrained to that range.
 	float compute(const float* gyro_rates, float* angles, float balance_angle) {
-		const float setpoint_diff = balance_angle - prev_balance_angle_;
-		prev_balance_angle_ = balance_angle;
-		float avg_gyro_upd = constrain(
-				setpoint_diff + gyro_rates[ANGLE_DRIVE],
-				-settings_->balance_settings.balance_d_param_limiter,
-				settings_->balance_settings.balance_d_param_limiter);
-
-		avg_gyro_upd = d_lpf_.compute(avg_gyro_upd);
-		return balance_pid_.compute(getPInput(angles, balance_angle), avg_gyro_upd);
+		return balance_pid_.compute(getPInput(angles, balance_angle));
 	}
 
 	// Compute torque needed while board in starting up phase (coming from one side to balanced state).
 	// Returns torque request based on current imu and gyro readings. Expected range is [-1:1],
 	// but not constrained to that range.
 	float computeStarting(const float* gyro_rates, float* angles, float pid_P_multiplier) {
-		float pid_D_multiplier =  START_D_MAX_MULTIPLIER *
-				min((START_ANGLE_DRIVE - fabsf(angles[ANGLE_DRIVE])) / (START_ANGLE_DRIVE - START_ANGLE_DRIVE_FULL), 1);
-
-		// increase angle compensation as board approaches balance point. Never reduce it until reset
-		if (pid_D_multiplier > max_D_multiplier_so_far_)
-			max_D_multiplier_so_far_ = pid_D_multiplier;
 
 		float pid_out = balance_pid_.compute(
-			getPInput(angles, 0) * pid_P_multiplier, 
-			gyro_rates[ANGLE_DRIVE] * max_D_multiplier_so_far_);
+			getPInput(angles, 0) * pid_P_multiplier);
 
 		return constrain(pid_out, -START_MAX_POWER, START_MAX_POWER);
 	}
@@ -71,7 +54,5 @@ public:
 private:
 	const Config* settings_;
 	float max_D_multiplier_so_far_ = 0;
-	BiQuadLpf d_lpf_;
 	PidController balance_pid_;
-	float prev_balance_angle_;
 };

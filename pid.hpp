@@ -10,7 +10,10 @@ public:
 	    reset();
 	}
 
-	float compute(float error, float de) {
+	float compute(float error) {
+		float de = error - _prev_error;
+		_prev_error = error;
+
 		// Cumulative sumI changes slowly, it is OK to use I value from previous iteration here.
 		float output =  error * _params->p + de * _params->d + applyExpoPoly(_sumI,_params->i_expo);
 
@@ -29,11 +32,13 @@ public:
 
 	void reset() {
 		_sumI = 0;
+		_prev_error = 0;
 	}
 
 private:
 	const Config_PidConfig* _params;
 	float _sumI;
+	float _prev_error;
 
 	DISALLOW_COPY_AND_ASSIGN(PidController);
 };
