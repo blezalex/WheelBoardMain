@@ -51,7 +51,7 @@ public:
 	// but not constrained to that range.
 	float compute(const float* gyro_rates, float* angles, float balance_angle) {
 		float rateRequest = angle_pid_.compute(getPInput(angles, balance_angle));
-		return calcRatePid(rateRequest, gyro_rates[ANGLE_DRIVE]);
+		return calcRatePid(rateRequest, -gyro_rates[ANGLE_DRIVE]);
 	}
 
 	// Compute torque needed while board in starting up phase (coming from one side to balanced state).
@@ -62,7 +62,7 @@ public:
 		angle_pid_.resetI();
 		float rateRequest = angle_pid_.compute(getPInput(angles, 0));
 		rateRequest *= pid_P_multiplier;
-		float pid_out = calcRatePid(rateRequest, gyro_rates[ANGLE_DRIVE]) * pid_P_multiplier;
+		float pid_out = calcRatePid(rateRequest, -gyro_rates[ANGLE_DRIVE]) * pid_P_multiplier;
 
 		return constrain(pid_out, -START_MAX_POWER, START_MAX_POWER);
 	}

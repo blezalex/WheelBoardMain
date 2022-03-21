@@ -2,7 +2,7 @@
 #include "global.h"
 #include "stm32f10x_crc.h"
 
-#define kHeaderSize 4 // Id + 1 byte msg len, 2 bytes padding
+#define kHeaderSize 4 // Id + 2 byte msg len, 1 bytes padding
 #define kSuffixSize 2 // CRC
 #define kMetadataSize (kHeaderSize + kSuffixSize)
 #define kMsgTimeoutMs 1000u // 1 second
@@ -13,9 +13,10 @@ public:
 
 	void SendMsg(uint8_t msg_id, const uint8_t* data, uint32_t data_len) {
 		uint8_t header[kHeaderSize];
+		const uint32_t total_len = data_len + kMetadataSize;
 		header[0] = msg_id;
-		header[1] = data_len + kMetadataSize;
-		header[2] = 0;
+		header[1] = total_len;
+		header[2] = total_len >> 8;
 		header[3] = 0;
 		CRC_ResetDR();
 		uint32_t crc32 = CRC_CalcCRC(*(uint32_t*)header);
@@ -118,7 +119,7 @@ public:
 		return rx_data + kHeaderSize;
 	}
 
-	const uint8_t data_len() {
+	const uint32_t data_len() {
 		return expected_msg_len() - kMetadataSize;
 	}
 
@@ -130,8 +131,8 @@ private:
 		return rx_data[0];
 	}
 
-	uint8_t expected_msg_len() {
-		return rx_data[1];
+	uint32_t expected_msg_len() {
+		return (static_cast<uint32_t>(rx_data[2]) << 8) | rx_data[1];
 	}
 
 	uint8_t expected_msg_crc_lo() {

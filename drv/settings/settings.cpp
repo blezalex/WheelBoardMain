@@ -38,9 +38,10 @@ int32_t saveProtoToBuffer(uint8_t* buffer, int16_t max_size, const pb_field_t fi
 	return sizestream.bytes_written;
 }
 
+uint8_t scratch[CONFIG_SIZE_MAX];
+
 bool saveSettingsToFlash(const Config& config) {
-	uint8_t buffer[255];
-	int32_t size = saveProtoToBuffer(buffer, sizeof(buffer), Config_fields, &config);
+	int32_t size = saveProtoToBuffer(scratch, sizeof(scratch), Config_fields, &config);
 	if (size < 0)
 		return false;
 
@@ -54,7 +55,7 @@ bool saveSettingsToFlash(const Config& config) {
 	int size_round_up = (size + 3) / 4 * 4;
 	for (int i = 0; i < size_round_up/ 4; i++) {
 		// +4 for size block
-		if (FLASH_ProgramWord((uint32_t)CONFIG_FLASH_PAGE_ADDR + i*4 + 4, ((uint32_t*)buffer)[i]) != FLASH_Status::FLASH_COMPLETE)
+		if (FLASH_ProgramWord((uint32_t)CONFIG_FLASH_PAGE_ADDR + i*4 + 4, ((uint32_t*)scratch)[i]) != FLASH_Status::FLASH_COMPLETE)
 			return false;
 	}
 

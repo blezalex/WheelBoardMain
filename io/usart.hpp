@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include "global.h"
 
-#define TX_BUFFER_SIZE 256
+#define TX_BUFFER_SIZE 512
 #define RX_BUFFER_SIZE 256
 
 class Usart  {

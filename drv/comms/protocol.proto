@@ -112,9 +112,6 @@ message Config {
   }
   
   message Misc {
-    // 0 - no log, 1 - log angle, 2 - log output
-    optional int32 log_type = 1 [ default = 0 ];
-
     // 0-1, 1 = 100% of output power = no warning at all
     required float throttle_threshold = 7 [ default = 0.75 ];
     required float throttle_rc = 6 [ default = 0.05 ];
