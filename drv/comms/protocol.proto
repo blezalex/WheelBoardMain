@@ -147,17 +147,6 @@ message Config {
 
   optional LoadLift load_lift = 7;
 
-
-  message KeepRoll {
-    required float multiplier = 1 [default = 0 ];
-    required float filter_rc = 2 [ default = 0.05 ];
-    required float max_angle = 3 [ default = 5];
-    required float raise_deg_sec = 4 [ default = 0.5 ]; // deg per sec.
-    required float drop_deg_sec = 5 [ default = 0.5 ]; // deg per sec.
-  }
-
-  optional KeepRoll keep_roll = 8;
-
   optional PidConfig rate_pid = 9;
 }
 

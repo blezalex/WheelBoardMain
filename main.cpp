@@ -438,7 +438,6 @@ int main(void) {
       vesc.mc_values_.v_in_smoothed = v_in_lpf.compute(vesc.mc_values_.v_in);
       vesc.mc_values_.duty_smoothed =
           duty_lpf.compute(vesc.mc_values_.duty_now);
-      main_ctrl.OnErpmUpdate(vesc.mc_values_.rpm);
     }
   }
 }
