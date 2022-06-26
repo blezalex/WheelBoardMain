@@ -27,6 +27,7 @@ struct LedState {
 	TurnState turn_state;
 	bool braking = false;
 	float prev_speed;
+	float battery_level;
 };
 
 LedState led_state;
@@ -35,8 +36,9 @@ float rotation_rc = 0.1;
 LPF rotation_lpf(&rotation_rc);
 
 
-void led_controller_set_state(float speed, float rotation_rate) {
+void led_controller_set_state(float speed, float rotation_rate, float battery_level) {
 	led_state.braking = (fabsf(speed)  < fabsf(led_state.prev_speed) * 0.95); // if speed reduced by 5% or more
+	led_state.battery_level = battery_level;
 
 	if (abs(speed) < STOPPED_SPEED) {
 		led_state.drive_state = DriveState::Stopped;
@@ -99,8 +101,13 @@ void led_controller_update() {
 	}
 
 	if (led_state.drive_state == DriveState::Stopped) {
-		for (int i = 0; i < LED_COUNT; i++) {
-			led_set_color(i, 0x606060);
+
+		int green_led_cnt = led_state.battery_level * LED_COUNT_SINGLE_SIDE;
+
+		for (int i = 0; i < LED_COUNT_SINGLE_SIDE; i++) {
+			uint32_t color = i < green_led_cnt ? 0xDF0000 : 0x00DF00;
+			led_set_color(i, color);
+			led_set_color(LED_COUNT - i - 1, color);
 		}
 		return;
 	}

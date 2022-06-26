@@ -260,7 +260,11 @@ int main(void) {
     if ((uint16_t)(half_millis() - last_check_time) > 100u) {
       last_check_time = half_millis();
 
-      led_controller_set_state(vesc.mc_values_.rpm, imu.rates[2]);
+      float battery_level = vesc.mc_values_.v_in / 13;
+      battery_level = constrain(battery_level, 3.6, 4.2);
+      battery_level = fmap(battery_level, 3.6, 4.2, 0, 1);
+
+      led_controller_set_state(vesc.mc_values_.rpm, imu.rates[2], battery_level);
       switch (debug_stream_type) {
         case 1:
           debug[write_pos++] = (int8_t)imu.angles[ANGLE_DRIVE];
