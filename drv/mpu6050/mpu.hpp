@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 #define MPU6050_INT_Exti EXTI_Line13
 
 #define MPU6050_LPF_256HZ 0
@@ -26,7 +28,7 @@ public:
 #define ACC_1G 2048
 
 #define GYRO_CALIBRATION_ITERATIONS_REQUIRED 2048
-#define GYRO_CALIBRATION_MAX_DIFF 16
+#define GYRO_CALIBRATION_MAX_DIFF 125
 
 class Mpu {
 public:

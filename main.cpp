@@ -1,12 +1,12 @@
-#include "misc.h"
-#include "stm32f10x.h"
-#include "stm32f10x_dma.h"
-#include "stm32f10x_exti.h"
-#include "stm32f10x_flash.h"
-#include "stm32f10x_gpio.h"
-#include "stm32f10x_i2c.h"
-#include "stm32f10x_iwdg.h"
-#include "stm32f10x_rcc.h"
+#include "stm_lib/inc/misc.h"
+#include "cmsis_boot/stm32f10x.h"
+#include "stm_lib/inc/stm32f10x_dma.h"
+#include "stm_lib/inc/stm32f10x_exti.h"
+#include "stm_lib/inc/stm32f10x_flash.h"
+#include "stm_lib/inc/stm32f10x_gpio.h"
+#include "stm_lib/inc/stm32f10x_i2c.h"
+#include "stm_lib/inc/stm32f10x_iwdg.h"
+#include "stm_lib/inc/stm32f10x_rcc.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -116,17 +116,6 @@ void configureVescBtInput() {
 }
 
 
-void configurePowerOnSignal() {
-	// PWM5, B8
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
-
-	/* GPIO configuration */
-	GPIO_InitTypeDef  GPIO_InitStructure;
-	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_8;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-	GPIO_Init(GPIOB, &GPIO_InitStructure);
-}
 
 extern "C" void EXTI9_5_IRQHandler(void) {
   if (EXTI_GetITStatus(EXTI_Line7))
@@ -136,15 +125,10 @@ extern "C" void EXTI9_5_IRQHandler(void) {
   }
 }
 
-static uint32_t last_running_timestamp;
-
-void shutdownIfTimeout(GenericOut* power_ctr) {
-	if (millis32() > (last_running_timestamp + 1000ul*60ul*5ul)) {
-		power_ctr->setState(false);
-	}
-}
-
 Communicator comms;
+
+extern uint8_t cf_data[] asm("_binary_build_descriptor_pb_bin_deflate_start");
+extern uint8_t cf_data_e[] asm("_binary_build_descriptor_pb_bin_deflate_end");
 
 int main(void) {
   SystemInit();
@@ -169,16 +153,11 @@ int main(void) {
   IWDG_Enable();
 
   configureVescBtInput();
-  GenericOut power_signal(RCC_APB2Periph_GPIOB, GPIOB, GPIO_Pin_8, 0);
-  power_signal.init(false);
-  power_signal.setState(true);
 
   PwmOut motor_out;
   motor_out.init(NEUTRAL_MOTOR_CMD);
 
   initArduino();
-
-  last_running_timestamp = millis32();
 
   i2c_init();
   Serial1.Init(USART1, 115200);
@@ -232,8 +211,6 @@ int main(void) {
 				beeper.setState(false);
 			}
 			led_controller_startup_animation();
-
-			shutdownIfTimeout(&power_signal);
 		}
   }
 
@@ -279,13 +256,6 @@ int main(void) {
   while (1) {  // background work
     IWDG_ReloadCounter();
     led_controller_update();
-
-    if (main_ctrl.current_state() == State::Running) {
-    	last_running_timestamp = millis32();
-    }
-    else {
-    	shutdownIfTimeout(&power_signal);
-    }
 
     if ((uint16_t)(half_millis() - last_check_time) > 100u) {
       last_check_time = half_millis();
@@ -427,6 +397,10 @@ int main(void) {
       case RequestId_SAVE_CONFIG:
         saveSettingsToFlash(cfg);
         comms.SendMsg(ReplyId_GENERIC_OK);
+        break;
+
+      case RequestId_GET_CONFIG_DESCRIPTOR:
+        comms.SendMsg(ReplyId_CONFIG_DESCRIPTOR, (uint8_t*)cf_data, (int)cf_data_e - (int)cf_data);
         break;
     }
 

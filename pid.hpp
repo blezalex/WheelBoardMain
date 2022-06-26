@@ -1,7 +1,7 @@
 #ifndef _PID_H
 #define _PID_H
-
-#include "drv/comms/protocol.pb.h"
+#include "global.h"
+#include "drv/comms/config.pb.h"
 
 class PidController {
 public:
@@ -13,6 +13,7 @@ public:
 	float compute(float error) {
 		float de = error - _prev_error;
 		_prev_error = error;
+
 		return compute(error, de);
 	}
 

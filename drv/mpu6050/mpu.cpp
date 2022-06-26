@@ -1,17 +1,18 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "stm32f10x.h"
-#include "stm32f10x_gpio.h"
-#include "stm32f10x_rcc.h"
-#include "stm32f10x_i2c.h"
-#include "stm32f10x_dma.h"
-#include "stm32f10x_exti.h"
-#include "misc.h"
+#include "../../cmsis_boot/stm32f10x.h"
+#include "../../stm_lib/inc/stm32f10x_gpio.h"
+#include "../../stm_lib/inc/stm32f10x_rcc.h"
+#include "../../stm_lib/inc/stm32f10x_i2c.h"
+#include "../../stm_lib/inc/stm32f10x_dma.h"
+#include "../../stm_lib/inc/stm32f10x_exti.h"
+#include "../../stm_lib/inc/misc.h"
 #include "mpu.hpp"
 #include "mpu6050_registers.hpp"
-#include "io/i2c.hpp"
-#include "global.h"
+#include "../../io/i2c.hpp"
+#include "../../global.h"
+#include "../../utils.h"
 
 
 #define MPU6050_ADDRESS     0x68u

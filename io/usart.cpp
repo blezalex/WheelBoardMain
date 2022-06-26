@@ -102,11 +102,25 @@ void Usart::SendCurrentByteFromBuffer() {
 	 }
 }
 
+int32_t Usart::TxBufferFreeCapacity() {
+	int32_t currently_buffered = txBufferWriteIdx - txBufferReadIdx;
+	if (currently_buffered < 0) {
+		currently_buffered += TX_BUFFER_SIZE;
+	}
+
+	return TX_BUFFER_SIZE - 1 - currently_buffered;
+}
+
 // TODO: this function is not thread safe, but works OK in practice :)
 
 // TODO: Implement block TX, such that caller blocks is if there is no room in the buffer left and waits until all data is buffered.
-void Usart::Send(const uint8_t* data, int32_t size) {
-	// TODO: Check if buffer has enough room, if not block or error ?
+int32_t Usart::Send(const uint8_t* data, int32_t size) {
+	int32_t tx_available = TxBufferFreeCapacity();
+
+	if (size > tx_available) {
+		size = tx_available;
+	}
+
 	for (int i = 0; i < size; i++) {
 		txBuffer[txBufferWriteIdx] = data[i];
 
@@ -122,7 +136,21 @@ void Usart::Send(const uint8_t* data, int32_t size) {
 		SendCurrentByteFromBuffer();
 		USART_ITConfig(device_, USART_IT_TXE, ENABLE);
 	}
+
+	return size;
 }
+
+void Usart::SendWithWait(const uint8_t* data, int32_t size) {
+	while (size > 0) {
+		int32_t sent = Send(data, size);
+		if (sent < 64) {
+			delay(5); // wait for 10ms to free up the buffer.
+		}
+		data += sent;
+		size -= sent;
+	}
+}
+
 
 void Usart::handleIRQ(){
 	if(USART_GetITStatus(device_, USART_IT_TXE) != RESET) {

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "global.h"
+#include "../global.h"
 #include "guard.hpp"
 #include "lpf.hpp"
-#include "drv/comms/protocol.pb.h"
+#include "drv/comms/config.pb.h"
 
 class FootpadGuard : public Guard {
 public:

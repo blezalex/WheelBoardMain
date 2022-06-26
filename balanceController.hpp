@@ -9,7 +9,7 @@
 class BalanceController  {
 public:
 	BalanceController(const Config* settings) :
-		settings_(settings), d_lpf_(&settings->balance_settings.balance_d_param_lpf_hz), angle_pid_(&settings->balance_pid), rate_pid_(&settings->rate_pid) {
+		settings_(settings), d_lpf_(&settings->balance_settings.balance_d_param_lpf_hz), angle_pid_(&settings->angle_pid), rate_pid_(&settings->rate_pid) {
 		reset();
 	}
 

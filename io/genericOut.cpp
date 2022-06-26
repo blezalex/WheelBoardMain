@@ -1,5 +1,5 @@
 #include "genericOut.hpp"
-#include "stm32f10x_rcc.h"
+#include "stm_lib/inc/stm32f10x_rcc.h"
 #include "global.h"
 
 

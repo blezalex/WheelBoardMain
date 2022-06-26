@@ -1,41 +1,25 @@
 
 #include "settings.hpp"
-#include "drv/comms/protocol.pb.h"
-#include "../nanopb-0.3.9.2-windows-x86/pb_encode.h"
-#include "../nanopb-0.3.9.2-windows-x86/pb_decode.h"
+#include "drv/comms/config.pb.h"
+#include <pb_encode.h>
+#include <pb_decode.h>
 #include "stm32f10x_flash.h"
 
 #define CONFIG_SIZE_MAX 512
 #define CONFIG_FLASH_PAGE_ADDR (FLASH_BASE + 128*1024 - CONFIG_SIZE_MAX)
 
-bool saveToBufferFn(pb_ostream_t *stream, const uint8_t *buf, size_t count) {
-	uint8_t** out = (uint8_t**)stream->state;
 
-	for (size_t i = 0; i < count; i++) {
-		*((*out)++) = *(buf++);
-	}
-	return true;
-}
-
-int32_t saveProtoToBuffer(uint8_t* buffer, int16_t max_size, const pb_field_t fields[], const void *src_struct,  Usart* log ) {
-	pb_ostream_t sizestream = { 0 };
-	pb_encode(&sizestream, fields, src_struct);
-
-	if (sizestream.bytes_written > max_size) {
-		return -sizestream.bytes_written;
-	}
-
-	pb_ostream_t save_stream = { &saveToBufferFn, &buffer, max_size, 0 };
-	if (!pb_encode(&save_stream, fields, src_struct)) {
+int32_t saveProtoToBuffer(uint8_t* buffer, int16_t max_size, const pb_msgdesc_t* fields, const void *src_struct,  Usart* log ) {
+	pb_ostream_t stream = pb_ostream_from_buffer(buffer, max_size);
+	if (!pb_encode(&stream, fields, src_struct)) {
 		if (log != nullptr)
 		{
-			log->Send(save_stream.errmsg, strlen(save_stream.errmsg));
-
+			log->Send(PB_GET_ERROR(&stream), strlen(PB_GET_ERROR(&stream)));
 		}
 		return -1;
 	}
 
-	return sizestream.bytes_written;
+	return stream.bytes_written;
 }
 
 uint8_t scratch[CONFIG_SIZE_MAX];
@@ -63,22 +47,10 @@ bool saveSettingsToFlash(const Config& config) {
 	return true;
 }
 
-
-bool read_fn(pb_istream_t *stream, uint8_t *buf, size_t count) {
-	uint32_t* read_offset = (uint32_t*)stream->state;
-//	if (*read_offset + count > (CONFIG_FLASH_PAGE_ADDR + CONFIG_SIZE_MAX))
-//		return false;
-
-	memcpy(buf, (uint8_t*)*read_offset, count);
-	*read_offset += count;
-	return true;
-}
-
 bool readSettingsFromBuffer(Config* config, const uint8_t* data, uint32_t data_len) {
-	uint32_t read_offset = (uint32_t)data;
-	pb_istream_t stdinstream = { &read_fn, &read_offset, data_len };
+	pb_istream_t stream = pb_istream_from_buffer(data, data_len);
 
-	return pb_decode(&stdinstream, Config_fields, config);
+	return pb_decode(&stream, Config_fields, config);
 }
 
 bool readSettingsFromFlash(Config* config) {

@@ -1,5 +1,4 @@
 syntax = "proto2";
-option java_package = "proto";
 
 // CMD format:
 // Byte 0: Fixed 0x1 protocol header/version
@@ -19,6 +18,7 @@ enum RequestId {
   GET_DEBUG_BUFFER = 6;
   SET_DEBUG_STREAM_ID = 7;
   TOGGLE_PASSTHROUGH = 8;
+  GET_CONFIG_DESCRIPTOR = 9;
 }
 
 enum ReplyId {
@@ -29,125 +29,7 @@ enum ReplyId {
   CONFIG = 4;
   CRC_MISMATCH = 5;
   DEBUG_BUFFER = 6;
-}
-
-message Config {
-  message Callibration {
-    required int32 acc_x = 1 [ default = 0 ];
-    required int32 acc_y = 2 [ default = 0 ];
-    required int32 acc_z = 3 [ default = 0 ];
-
-    optional float x_offset = 4 [ default = 0 ];
-    optional float y_offset = 5 [ default = 0 ];
-    optional float z_offset = 6 [ default = 0 ];
-  }
-
-  optional Callibration callibration = 1;
-
-  message PidConfig {
-    // leaning angle from 0 to balance_angle_scaling maps 0 to 100% throttle.
-    // 0-1 = 0-100%
-    required float p = 1 [ default = 1 ];
-    // leaning rate in deg/sec is multiplied by d
-    required float d = 2 [ default = 0.005 ];
-    required float i = 3 [ default = 0.001 ];
-    required float max_i = 4 [ default = 0.006 ];
-    optional float i_expo = 13 [ default = 0 ];
-  }
-
-  required PidConfig balance_pid = 2;
-
-  message FootPadSettings {
-    required float filter_rc = 1 [ default = 0.05 ];
-    required int32 min_level_to_start = 2 [ default = 3300 ];
-    required int32 min_level_to_continue = 3 [ default = 2000 ];
-    required int32 shutoff_delay_ms = 4 [ default = 100 ];
-  }
-
-  required FootPadSettings foot_pad = 3;
-
-  message BalancingConfig {
-    // min value is 1 = linear
-    required float balance_expo = 1 [ default = 0.15 ];
-
-    // scale input angel in deg by deviding by 'balance_angle_scaling'
-    required float balance_angle_scaling = 2 [ default = 15 ];
-
-    required int32 max_start_angle_steer = 3 [ default = 15 ];
-    required int32 shutoff_angle_steer = 4 [ default = 40 ];
-    required int32 shutoff_angle_drive = 5 [ default = 14 ];
-
-    required int32 max_update_limiter = 6 [ default = 300 ];
-    required float output_lpf_hz = 7 [ default = 100 ];
-
-	// Max rotation rate for D param is limited to 100 deg/sec by default
-    required int32 balance_d_param_limiter = 8 [ default = 100 ];
-
-    required float balance_d_param_lpf_hz = 9 [ default = 50 ];
-
-    // MPU6050_LPF_256HZ 0, MPU6050_LPF_188HZ 1, MPU6050_LPF_98HZ 2,
-    // MPU6050_LPF_42HZ 3, MPU6050_LPF_20HZ 4, MPU6050_LPF_10HZ 5,
-    // MPU6050_LPF_5HZ  6 Reboot required to change
-    required uint32 global_gyro_lpf = 10 [ default = 2 ];
-
-    optional float imu_beta = 11 [ default = 0.02 ];
-
-    // 0 - exponential, 1 natural, 2 - poly
-    optional int32 expo_type = 12 [ default = 0 ];
-
-    // If non-zero, balance controler sends current control requests via usart
-    // (keep PPM wire disconnected.)
-    optional float usart_control_scaling = 13 [ default = 0 ];
-  }
-
-  required BalancingConfig balance_settings = 4;
-
-  message PusbackSettings {
-    required int32 min_speed_erpm = 1 [ default = 100000 ];
-    reserved 2;
-
-    required float push_raise_speed_deg_sec = 3 [ default = 0.5 ];
-    required float push_release_speed_deg_sec = 4 [ default = 0.2 ];
-    optional float push_angle = 5 [ default = 5 ];
-  }
-  
-  message Misc {
-    // 0-1, 1 = 100% of output power = no warning at all
-    required float throttle_threshold = 7 [ default = 0.75 ];
-    required float throttle_rc = 6 [ default = 0.05 ];
-
-    // Get pushback/beep if duty_cycle exceeds this threshold
-    optional float duty_threshold = 8 [ default = 0.75 ];
-    optional float duty_rc = 9 [ default = 0.25 ];
-
-    // Get pushback/beep if erpm exceeds this threshold
-    optional int32 erpm_threshold = 10 [ default = 6000 ];
-    optional float erpm_rc = 11 [ default = 0.25 ];
-
-    // Get pushback/beep if voltage drops below this threshold
-    optional float low_volt_threshold = 12 [ default = 45 ];
-    optional float volt_rc = 13 [ default = 0.25 ];
-
-    reserved 14;
-    
-    // length of 1 electrical rotation
-    optional float erpm_to_dist_const = 15 [ default = 1 ];
-  }
-  
-  required Misc misc = 5;
-  optional PusbackSettings  pushback = 6;
-  
-  message LoadLift {
-    required int32 start_current = 1 [ default = 10 ];
-    required float max_angle = 2 [ default = 5];
-    required float filter_rc = 3 [ default = 0.05 ];
-    required float multiplier = 4 [ default = 0.1 ]; // degrees = current*multiplier
-	  required float ramp_deg_sec = 5 [ default = 0.5 ]; // deg per sec.
-  }
-
-  optional LoadLift load_lift = 7;
-
-  optional PidConfig rate_pid = 9;
+  CONFIG_DESCRIPTOR = 7;
 }
 
 message Stats {

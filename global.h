@@ -1,11 +1,10 @@
 #pragma once
 
+#include <stdint.h>
 #include <math.h>
 
-#include "stm32f10x.h"
+#include "cmsis_boot/stm32f10x.h"
 #include "arduino.h"
-
-
 
 //#define REV5
 
@@ -57,4 +56,8 @@ inline float applyExpoNatural(float x, float k) {
 inline float applyExpoPoly(float x, float k) {
 	float absx = fabsf(x);
 	return sgn(x) * absx/(1+k*(1-absx));
+}
+
+constexpr inline float deg_to_rad(float angle) {
+	return angle * M_PI / 180;
 }

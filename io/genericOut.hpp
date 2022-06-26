@@ -1,6 +1,6 @@
 #pragma once
 #include <stdint.h>
-#include "stm32f10x_gpio.h"
+#include <stm32f10x_gpio.h>
 #include "global.h"
 
 class GenericOut {

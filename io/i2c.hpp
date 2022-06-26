@@ -1,5 +1,5 @@
 #pragma once
-#include "stm32f10x.h"
+#include "../cmsis_boot/stm32f10x.h"
 
 void i2c_init();
 

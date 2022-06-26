@@ -6,3 +6,5 @@ BalancingController.comarker
 BalancingController.cogui
 
 logs/*
+build/*
+nanopb/*
