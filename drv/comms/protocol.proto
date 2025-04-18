@@ -31,20 +31,3 @@ enum ReplyId {
   DEBUG_BUFFER = 6;
   CONFIG_DESCRIPTOR = 7;
 }
-
-message Stats {
-  required float batt_voltage = 1;
-  required float batt_current = 2;
-  required float motor_current = 3;
-  required float speed = 5;
-  required float distance_traveled = 6;
-  required float drive_angle = 7;
-  required float stear_angle = 8;
-
-  required uint32 pad_pressure1 = 9;
-  required uint32 pad_pressure2 = 10;
-
-  required float motor_duty = 11;
-  required float esc_temp = 12;
-  required float motor_temp = 13;
-}

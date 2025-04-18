@@ -90,8 +90,8 @@
   </Components>
   <Files>
     <File name="drv/mpu6050/mpu6050_registers.hpp" path="drv/mpu6050/mpu6050_registers.hpp" type="1"/>
-    <File name="drv/mpu6050/mpu.cpp" path="drv/mpu6050/mpu.cpp" type="1"/>
     <File name="proto/pb_decode.h" path="../nanopb-0.3.9.2-windows-x86/pb_decode.h" type="1"/>
+    <File name="drv/mpu6050/mpu.cpp" path="drv/mpu6050/mpu.cpp" type="1"/>
     <File name="drv/led/led.hpp" path="drv/led/led.hpp" type="1"/>
     <File name="imu/imu.cpp" path="imu/imu.cpp" type="1"/>
     <File name="imu/MadgwickAHRS.hpp" path="imu/MadgwickAHRS.hpp" type="1"/>
@@ -121,8 +121,8 @@
     <File name="cmsis/core_cmInstr.h" path="cmsis/core_cmInstr.h" type="1"/>
     <File name="io/usart.cpp" path="io/usart.cpp" type="1"/>
     <File name="drv/comms/protocol.pb.h" path="drv/comms/protocol.pb.h" type="1"/>
-    <File name="drv/comms/protocol.proto" path="drv/comms/protocol.proto" type="1"/>
     <File name="balanceController.hpp" path="balanceController.hpp" type="1"/>
+    <File name="drv/comms/protocol.proto" path="drv/comms/protocol.proto" type="1"/>
     <File name="stm_lib/src/stm32f10x_rcc.c" path="stm_lib/src/stm32f10x_rcc.c" type="1"/>
     <File name="io/i2c.cpp" path="io/i2c.cpp" type="1"/>
     <File name="drv/vesc/vesc.hpp" path="drv/vesc/vesc.hpp" type="1"/>
@@ -135,8 +135,8 @@
     <File name="stm_lib/inc/stm32f10x_exti.h" path="stm_lib/inc/stm32f10x_exti.h" type="1"/>
     <File name="drv/vesc" path="" type="2"/>
     <File name="stm_lib/inc/stm32f10x_adc.h" path="stm_lib/inc/stm32f10x_adc.h" type="1"/>
-    <File name="cmsis_boot/system_stm32f10x.h" path="cmsis_boot/system_stm32f10x.h" type="1"/>
     <File name="main.cpp" path="main.cpp" type="1"/>
+    <File name="cmsis_boot/system_stm32f10x.h" path="cmsis_boot/system_stm32f10x.h" type="1"/>
     <File name="drv/comms/communicator.hpp" path="drv/comms/communicator.hpp" type="1"/>
     <File name="stm_lib/src/stm32f10x_crc.c" path="stm_lib/src/stm32f10x_crc.c" type="1"/>
     <File name="guards/footpadGuard.cpp" path="guards/footpadGuard.cpp" type="1"/>
@@ -182,8 +182,8 @@
     <File name="stm_lib/inc/stm32f10x_rcc.h" path="stm_lib/inc/stm32f10x_rcc.h" type="1"/>
     <File name="stm_lib/inc/stm32f10x_i2c.h" path="stm_lib/inc/stm32f10x_i2c.h" type="1"/>
     <File name="syscalls" path="" type="2"/>
-    <File name="pid.hpp" path="pid.hpp" type="1"/>
     <File name="io/pwm_out.hpp" path="io/pwm_out.hpp" type="1"/>
+    <File name="pid.hpp" path="pid.hpp" type="1"/>
     <File name="proto/pb_encode.c" path="../nanopb-0.3.9.2-windows-x86/pb_encode.c" type="1"/>
     <File name="drv/settings/settings.hpp" path="drv/settings/settings.hpp" type="1"/>
     <File name="stm_lib/inc" path="" type="2"/>

@@ -1,6 +1,4 @@
 
-#TODO must pip install --upgrade protobuf grpcio-tools
-
 include ../nanopb/extra/nanopb.mk
 
 BUILD_DIR := build
@@ -46,11 +44,11 @@ ${BUILD_DIR}/descriptor.pb.bin: drv/comms/config.proto
 	$(PROTOC) $< --descriptor_set_out=$@
 
 ${BUILD_DIR}/descriptor.pb.bin.deflate: ${BUILD_DIR}/descriptor.pb.bin
-	python3 -c "import zlib,sys; sys.stdout.buffer.write(zlib.compress(sys.stdin.buffer.read(),9))" < $< > $@
+	python -c "import zlib,sys; sys.stdout.buffer.write(zlib.compress(sys.stdin.buffer.read(),9))" < $< > $@
 
 ${BUILD_DIR}/descriptor.pb.deflate.o: ${BUILD_DIR}/descriptor.pb.bin.deflate
-# arm-none-eabi-ld -r -b binary $< -o $@
-	arm-none-eabi-objcopy -I binary -B arm -O 'elf32-littlearm' $< $@ --rename-section=.data=.rodata
+# arm-none-eabi-ld.exe -r -b binary $< -o $@
+	arm-none-eabi-objcopy.exe -I binary -B arm -O 'elf32-littlearm' $< $@ --rename-section=.data=.rodata
 
 # The final build step.
 ${BUILD_DIR}/BalancingController.elf: $(OBJS) link.ld ${BUILD_DIR}/descriptor.pb.deflate.o
@@ -70,5 +68,5 @@ clean:
 program: ${BUILD_DIR}/BalancingController.elf
 	"C:/CooCox/CoIDE/bin\coflash.exe" program STM32F103CB $< --adapter-name=ST-Link --port=SWD --adapter-clk=2000000 --erase=affected --reset=SYSRESETREQ --driver="C:/CooCox/CoIDE/flash/STM32F10x_MD_128.elf" --verify=false 
 
-program_openocd:
-	openocd -f interface/stlink.cfg -f target/stm32f1x.cfg -c "init;targets;halt;flash write_image erase ${BUILD_DIR}/BalancingController.elf;verify_image ${BUILD_DIR}/BalancingController.elf;reset;shutdown"
+
+

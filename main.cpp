@@ -87,36 +87,6 @@ void usart2txConfigure(bool manual) {
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
 }
 
-void configureVescBtInput() {
-	// PWM4, B7
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
-
-	/* GPIO configuration */
-	GPIO_InitTypeDef  GPIO_InitStructure;
-	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_7;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPD;
-	GPIO_Init(GPIOB, &GPIO_InitStructure);
-
-	GPIO_EXTILineConfig(GPIO_PortSourceGPIOB, GPIO_PinSource7);
-
-	EXTI_InitTypeDef EXTI_InitStructure;
-	EXTI_InitStructure.EXTI_Line = EXTI_Line7;
-	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
-	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising_Falling;
-	EXTI_InitStructure.EXTI_LineCmd = ENABLE;
-	EXTI_Init(&EXTI_InitStructure);
-
-	NVIC_InitTypeDef NVIC_InitStructure;
-	NVIC_InitStructure.NVIC_IRQChannel = EXTI9_5_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_Init(&NVIC_InitStructure);
-}
-
-
-
 extern "C" void EXTI9_5_IRQHandler(void) {
   if (EXTI_GetITStatus(EXTI_Line7))
   {
@@ -151,8 +121,6 @@ int main(void) {
   IWDG_SetReload(0x0FFF);  // This parameter must be a number between 0 and 0x0FFF.
   IWDG_ReloadCounter();
   IWDG_Enable();
-
-  configureVescBtInput();
 
   PwmOut motor_out;
   motor_out.init(NEUTRAL_MOTOR_CMD);
@@ -252,7 +220,6 @@ int main(void) {
   read_pos = 0;
   uint8_t debug_stream_type = 0;
 
-  bool passthough_enabled = false;
   while (1) {  // background work
     IWDG_ReloadCounter();
     led_controller_update();
@@ -260,9 +227,12 @@ int main(void) {
     if ((uint16_t)(half_millis() - last_check_time) > 100u) {
       last_check_time = half_millis();
 
-      float battery_level = vesc.mc_values_.v_in / 13;
-      battery_level = constrain(battery_level, 3.6, 4.2);
-      battery_level = fmap(battery_level, 3.6, 4.2, 0, 1);
+      float battery_level = vesc.mc_values_.v_in / max(cfg.misc.batt_cells, 1);
+
+      static constexpr float kMinCharge = 3.0;
+      static constexpr float kMaxCharge = 4.15;
+      battery_level = constrain(battery_level, kMinCharge, kMaxCharge);
+      battery_level = fmap(battery_level, kMinCharge, kMaxCharge, 0, 1);
 
       led_controller_set_state(vesc.mc_values_.rpm, imu.rates[2], battery_level);
       switch (debug_stream_type) {
@@ -332,18 +302,6 @@ int main(void) {
         break;
       }
 
-      case RequestId_TOGGLE_PASSTHROUGH: {
-      	if (main_ctrl.current_state() == State::Stopped) {
-        	passthough_enabled = !passthough_enabled;
-        	usart2txConfigure(passthough_enabled);
-        	comms.SendMsg(ReplyId_GENERIC_OK);
-      	}
-      	else {
-      		comms.SendMsg(ReplyId_GENERIC_FAIL);
-      	}
-      	break;
-      }
-
       case RequestId_WRITE_CONFIG: {
         Config_Callibration c = cfg.callibration;
         bool good =
@@ -365,11 +323,12 @@ int main(void) {
       case RequestId_GET_STATS: {
         Stats stats = Stats_init_default;
         stats.drive_angle = imu.angles[ANGLE_DRIVE];
-        stats.stear_angle = imu.angles[ANGLE_STEER];
+        stats.steer_angle = imu.angles[ANGLE_STEER];
         stats.pad_pressure1 = foot_pad_guard.getLevel(0);
         stats.pad_pressure2 = foot_pad_guard.getLevel(1);
         stats.batt_current = vesc.mc_values_.avg_input_current;
         stats.batt_voltage = vesc.mc_values_.v_in;
+        stats.cell_voltage = stats.batt_voltage / max(cfg.misc.batt_cells, 1);
         stats.motor_current = vesc.mc_values_.avg_motor_current;
         stats.distance_traveled = vesc.mc_values_.tachometer_abs;
         stats.speed = vesc.mc_values_.rpm;
